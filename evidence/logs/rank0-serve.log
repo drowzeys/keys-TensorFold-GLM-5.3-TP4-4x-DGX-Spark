@@ -1,0 +1,20 @@
+[tensorfold] GLM-5.3 runs on four NVIDIA GPUs with 128 GB each (four DGX Sparks): serve with --tp 4 on all four (docs/design/glm-moe-dsa-tp4.md)
+[tensorfold] loading glm-5.3-tf: GLM-5.3 (glm_moe_dsa) on CUDA, rank 0 of 4
+NCCL version 2.30.7+cuda13.3
+
+[2026-09-30 20:54:13] gx10-5185:1:272 [0] transport/net_ib/common.cc:153 (ncclIbAsyncThreadMain) NCCL WARN NET/IB : rocep1s0f1:1 GID table changed
+
+[2026-09-30 20:54:13] gx10-5185:1:272 [0] transport/net_ib/common.cc:153 (ncclIbAsyncThreadMain) NCCL WARN NET/IB : rocep1s0f1:1 GID table changed
+[tensorfold] RoCE one-shot reduce ready (ranks bit-equal: True; equals the NCCL rank-order sum: True)
+[tensorfold] decode-window reductions: RoCE one-shot
+[tensorfold] rank 0: tuned 8 linear shapes, 6 retiled: 6144x640 (8, 4)->(32, 2), 2048x4096 (4, 4)->(8, 4), 4096x6144 (4, 4)->(2, 8), 6144x3072 (8, 4)->(4, 8), 3072x6144 (4, 4)->(1, 8), 6144x512 (8, 4)->(4, 8)
+[tensorfold] rank 0: DFlash2 drafter GLM-5.3-DFlash2 (block 8, taps (5, 19, 33, 47, 61, 75)) - per request "tf_mtp": "dflash"
+[tensorfold] rank 0: host anon 1.5 GiB after load, device free 20.7 of 121.6 GiB
+[tensorfold] GLM-5.3 rank 0/4: 78 layers loaded in 491s, context 36864 (fused, CUDA graphs; MTP drafts 2; token-level DSA past 2048)
+[tensorfold] rank 0: host anon 1.5 GiB, device free 20.7 GiB before warm-up
+[tensorfold] rank 0: 150 decode graphs captured in 28.9s (key buckets [None, 4096, 8192, 16384, 32768, 65536])
+[tensorfold] serving glm-5.3-tf at http://0.0.0.0:8890/v1 on CUDA, rank 0 of 4 (sampling: temperature 1.0, top_p 0.95; drafts: on; context: 36864; loaded in 525.2s)
+
+[2026-09-30 21:51:26] gx10-5185:1:272 [0] transport/net_ib/common.cc:153 (ncclIbAsyncThreadMain) NCCL WARN NET/IB : rocep1s0f1:1 GID table changed
+
+[2026-09-30 21:51:26] gx10-5185:1:272 [0] transport/net_ib/common.cc:153 (ncclIbAsyncThreadMain) NCCL WARN NET/IB : rocep1s0f1:1 GID table changed

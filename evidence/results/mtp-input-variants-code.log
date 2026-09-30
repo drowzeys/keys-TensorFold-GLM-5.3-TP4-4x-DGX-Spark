@@ -1,0 +1,8 @@
+normed/raw  ab-normed_raw            code   n=2 tps 27.38 tok/round 2.16 pass 78.7 ms
+normed/raw:full  ab-normed_raw:full       code   n=2 tps 26.81 tok/round 2.25 pass 83.9 ms
+raw/raw  ab-raw_raw               code   n=2 tps 20.24 tok/round 1.60 pass 79.0 ms
+raw/raw:full  ab-raw_raw:full          code   n=2 tps 20.04 tok/round 1.67 pass 83.4 ms
+normed/normed  ab-normed_normed         code   n=2 tps 28.58 tok/round 2.15 pass 75.2 ms
+normed/normed:full  ab-normed_normed:full    code   n=2 tps 29.40 tok/round 2.29 pass 77.8 ms
+raw/normed  ab-raw_normed            code   n=2 tps 23.31 tok/round 1.70 pass 73.1 ms
+raw/normed:full  ab-raw_normed:full       code   n=2 tps 21.80 tok/round 1.68 pass 77.2 ms

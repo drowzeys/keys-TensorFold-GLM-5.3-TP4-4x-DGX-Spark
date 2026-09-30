@@ -1,0 +1,43 @@
+[tensorfold] GLM-5.3 runs on four NVIDIA GPUs with 128 GB each (four DGX Sparks): serve with --tp 4 on all four (docs/design/glm-moe-dsa-tp4.md)
+[tensorfold] loading glm-5.3-tf: GLM-5.3 (glm_moe_dsa) on CUDA, rank 2 of 4
+[E930 20:56:26.166234559 socket.cpp:1028] [c10d] The client socket has timed out after 120000ms while trying to connect to (<fabric-ip>, 29562).
+[W930 20:56:26.176246725 TCPStore.cpp:340] [c10d] TCP client failed to connect/validate to host <fabric-ip>:29562 - retrying (try=0, timeout=120000ms, delay=51589ms): The client socket has timed out after 120000ms while trying to connect to (<fabric-ip>, 29562).
+Exception raised from throwTimeoutError at /__w/pytorch/pytorch/torch/csrc/distributed/c10d/socket.cpp:1030 (most recent call first):
+frame #0: c10::Error::Error(c10::SourceLocation, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >) + 0xc8 (0xfda7dbc7e158 in /usr/local/lib/python3.12/dist-packages/torch/lib/libc10.so)
+frame #1: c10::DistError::DistError(c10::SourceLocation, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >) + 0x78 (0xfda7dbc7ed48 in /usr/local/lib/python3.12/dist-packages/torch/lib/libc10.so)
+frame #2: c10::DistNetworkError::DistNetworkError(c10::SourceLocation, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >) + 0x78 (0xfda7dbc7f0c8 in /usr/local/lib/python3.12/dist-packages/torch/lib/libc10.so)
+frame #3: <unknown function> + 0x714cb34 (0xfda7f967cb34 in /usr/local/lib/python3.12/dist-packages/torch/lib/libtorch_cpu.so)
+frame #4: <unknown function> + 0x714fe4c (0xfda7f967fe4c in /usr/local/lib/python3.12/dist-packages/torch/lib/libtorch_cpu.so)
+frame #5: <unknown function> + 0x71501ac (0xfda7f96801ac in /usr/local/lib/python3.12/dist-packages/torch/lib/libtorch_cpu.so)
+frame #6: <unknown function> + 0x7150710 (0xfda7f9680710 in /usr/local/lib/python3.12/dist-packages/torch/lib/libtorch_cpu.so)
+frame #7: <unknown function> + 0x70b4a6c (0xfda7f95e4a6c in /usr/local/lib/python3.12/dist-packages/torch/lib/libtorch_cpu.so)
+frame #8: c10d::TCPStore::TCPStore(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, c10d::TCPStoreOptions const&) + 0x30c (0xfda7f95ee88c in /usr/local/lib/python3.12/dist-packages/torch/lib/libtorch_cpu.so)
+frame #9: <unknown function> + 0x1259ff0 (0xfda7fea29ff0 in /usr/local/lib/python3.12/dist-packages/torch/lib/libtorch_python.so)
+frame #10: <unknown function> + 0x627784 (0xfda7fddf7784 in /usr/local/lib/python3.12/dist-packages/torch/lib/libtorch_python.so)
+frame #11: python3() [0x50332c]
+frame #12: python3() [0x4c6d08]
+<omitting python frames>
+frame #14: python3() [0x5225b8]
+frame #15: python3() [0x51db54]
+frame #16: <unknown function> + 0x625fdc (0xfda7fddf5fdc in /usr/local/lib/python3.12/dist-packages/torch/lib/libtorch_python.so)
+frame #19: python3() [0x4d08f0]
+frame #20: python3() [0x5600a4]
+frame #21: python3() [0x503640]
+frame #25: python3() [0x522424]
+frame #26: python3() [0x51db54]
+frame #30: python3() [0x522424]
+frame #31: python3() [0x51db54]
+frame #35: python3() [0x55ebf8]
+frame #36: python3() [0x50332c]
+frame #39: python3() [0x68b438]
+frame #42: <unknown function> + 0x284c4 (0xfda8c1e184c4 in /lib/aarch64-linux-gnu/libc.so.6)
+frame #43: __libc_start_main + 0x98 (0xfda8c1e18598 in /lib/aarch64-linux-gnu/libc.so.6)
+
+[tensorfold] RoCE one-shot reduce ready (ranks bit-equal: True; equals the NCCL rank-order sum: True)
+[tensorfold] rank 2: tuned 8 linear shapes, 7 retiled: 6144x640 (8, 4)->(32, 2), 2048x4096 (4, 4)->(8, 4), 4096x6144 (4, 4)->(2, 8), 6144x3072 (8, 4)->(2, 8), 3072x6144 (4, 4)->(8, 4), 6144x512 (8, 4)->(64, 2), 512x6144 (1, 4)->(1, 8)
+[tensorfold] rank 2: DFlash2 drafter GLM-5.3-DFlash2 (block 8, taps (5, 19, 33, 47, 61, 75)) - per request "tf_mtp": "dflash"
+[tensorfold] rank 2: host anon 1.5 GiB after load, device free 23.5 of 121.7 GiB
+[tensorfold] GLM-5.3 rank 2/4: 78 layers loaded in 491s, context 36864 (fused, CUDA graphs; MTP drafts 2; token-level DSA past 2048)
+[tensorfold] rank 2: host anon 1.5 GiB, device free 23.5 GiB before warm-up
+[tensorfold] rank 2: 150 decode graphs captured in 28.8s (key buckets [None, 4096, 8192, 16384, 32768, 65536])
+[tensorfold] rank 2 ready in 526.5s, following rank 0

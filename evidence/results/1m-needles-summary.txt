@@ -1,0 +1,7 @@
+TensorFold full GLM-5.3, 1M context (DCP 4, four DGX Sparks) - needles done:
+  128K: PASS  prompt 133,162 tok  TTFT 419s  (318 tok/s)  reply 'The user is asking for the vault passphr'
+  512K: PASS  prompt 532,509 tok  TTFT 2031s  (262 tok/s)  reply 'The user is asking for the vault passphr'
+  966K: ERROR <HTTPError 400: 'Bad Request'>
+  short-context decode with DCP on (greedy): prose: 25.88 tok/s code: 28.61 tok/s 
+  device free per rank before warm-up: device free 10.5 GiB device free 6.5 GiB device free 17.4 GiB device free 16.9 GiB 
+TensorFold full GLM-5.3, 1M context (DCP 4) follow-up: ~1M needle PASS - prompt 966,562 tokens, TTFT 4245s (228 tok/s), reply 'The user is asking me to reveal a vault passphrase'. (128K PASS 419s, 512K PASS 2031s earlier.)
