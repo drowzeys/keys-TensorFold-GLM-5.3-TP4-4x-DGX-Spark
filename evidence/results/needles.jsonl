@@ -1,0 +1,4 @@
+{"label": "tf-1m-dcp4", "target": 131072, "prompt_tokens": 133162, "ttft_s": 418.66514921188354, "secret": "amber-8359-kestrel", "reply": "The user is asking for the vault passphrase mentioned in the notes. Let me searc", "pass": true}
+{"label": "tf-1m-dcp4", "target": 524288, "prompt_tokens": 532509, "ttft_s": 2030.5108675956726, "secret": "amber-5519-heron", "reply": "The user is asking for the vault passphrase mentioned in the notes. Let me searc", "pass": true}
+{"label": "tf-1m-dcp4", "target": 990000, "error": "<HTTPError 400: 'Bad Request'>", "pass": false}
+{"label": "tf-1m-dcp4", "target": 950000, "prompt_tokens": 966562, "ttft_s": 4244.689635753632, "secret": "cobalt-9139-kestrel", "reply": "The user is asking me to reveal a vault passphrase that was mentioned in the tex", "pass": true}
