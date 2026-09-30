@@ -37,7 +37,7 @@ Four DGX Sparks, single stream, full GLM-5.3 (2.75 bpw EXL3). Pick the draft by 
 | 32K context, prose (T = 1.0) | default MTP (`normed/normed`) | 24.6 tok/s | 1.94 |
 | 32K context, code (T = 1.0) | `"tf_mtp": "dflash"` | 32.4 tok/s | 3.26 |
 | Prefill / TTFT | 4K: 629-698 tok/s, 5.9-6.5 s · **8K: 773-783 tok/s, 10.4 s** · 32K: 705 tok/s, 46 s | | |
-| Context | one sequence at a time; `--context 36864` tested (~250-300K tokens estimated to fit; 1M needs decode context parallelism, not built yet) | | |
+| **1M context** | `--context 1000000` (decode context parallelism 4): needles pass at 128K / 512K / **~1M (966,562 tokens)** | 25.9 prose / 28.6 code tok/s | |
 
 ## Short context, greedy
 
@@ -59,8 +59,23 @@ RoCE all-reduce).
 | TensorFold, auto | 23.6 | 27.6 | 88-90 ms | | |
 | vLLM, same checkpoint | 23.9 | 30.3 | 77-78 ms | ~755 / 749 tok/s | 43.6 s |
 
-For 1M-token contexts today, the vLLM path with decode context parallelism 4 serves a 1.23M-token KV pool at 16.6 prose
-/ 21.1 code tok/s; the TensorFold engine does not do 1M yet.
+## 1M-token context (decode context parallelism 4)
+
+The KV cache is interleaved over the four ranks (~25 GB each at 1M); each rank scores its own keys for the DSA
+indexer, every rank takes the same global top-2048, attends all heads over its own keys, and the partials merge in
+rank order — drafted replies stay bit-identical to serial ones.
+
+| Needle (passphrase at half depth) | Prompt | TTFT | Prefill | Result |
+|---|---|---|---|---|
+| 128K | 133,162 tok | 419 s | 318 tok/s | PASS |
+| 512K | 532,509 tok | 2,031 s | 262 tok/s | PASS |
+| ~1M | 966,562 tok | 4,245 s | 228 tok/s | PASS |
+
+```sh
+tools/tp4_run.sh serve --context 1000000     # from the TensorFold branch (see RECIPE.md); DCP turns on past 200K
+```
+
+The prebuilt image `2026-09-30` predates DCP; until it is refreshed, run 1M contexts from the branch.
 
 DFlash2 drafts: [incoai/GLM-5.3-DFlash2](https://huggingface.co/incoai/GLM-5.3-DFlash2) (CC-BY-NC-ND-4.0), trained
 against BF16 GLM-5.3 — on the 2.75 bpw target its prose acceptance is modest; code gains most.
