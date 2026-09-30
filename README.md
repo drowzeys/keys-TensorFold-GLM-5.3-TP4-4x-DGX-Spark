@@ -9,27 +9,58 @@ drafted reply is bit-identical to a serial one.
   [`drowzeys/TensorFold:glm-moe-dsa-tp4`](https://github.com/drowzeys/TensorFold/tree/glm-moe-dsa-tp4))
 - Weights: [drowzeys/keys-GLM-5.3-EXL3-2.75BPW](https://huggingface.co/drowzeys/keys-GLM-5.3-EXL3-2.75BPW)
   (EXL3, a bit width per routed expert averaging 2.75 bpw; KL 0.124 nats / top-1 89.6 % vs BF16 over 65,536 tokens)
-- How to run it: [RECIPE.md](RECIPE.md)
+- How to run it: [one-shot.sh](one-shot.sh) with the prebuilt image (below), or [RECIPE.md](RECIPE.md) from source
 
-## Results
+## Quick start (prebuilt image)
 
-Four DGX Sparks, single stream, 32K-token context, temperature 1.0 / top-p 0.95, 512 tokens. The vLLM row is the same
-checkpoint on the same four Sparks with a tuned vLLM (EXL3 kernels, MTP k = 2, CUDA graphs, RoCE all-reduce).
+```sh
+# on every Spark, once per boot
+sudo sysctl -w vm.compaction_proactiveness=0
+# from any machine that can ssh to the four Sparks
+NODES="spark1 spark2 spark3 spark4" MODEL=/models/GLM-5.3-EXL3-2.75BPW ./one-shot.sh up
+#   + DRAFT=/models/GLM-5.3-DFlash2 for DFlash2 / auto drafts
+curl http://spark1:8890/v1/chat/completions -H 'Content-Type: application/json' \
+  -d '{"model": "glm-5.3-tf", "messages": [{"role": "user", "content": "Hello"}], "tf_mtp": "dflash"}'
+```
+
+Image: `ghcr.io/drowzeys/keys-tensorfold-glm53-tp4-dgx-spark:2026-09-30` (CUDA 13 / GB10; TensorFold `glm_moe_dsa`
+with its CUDA extensions prebuilt, cuda-exl3, b12x RoCE; the fastest settings as defaults).
+
+## Best configurations at a glance
+
+Four DGX Sparks, single stream, full GLM-5.3 (2.75 bpw EXL3). Pick the draft by workload:
+
+| Workload | Best configuration | Speed | Tokens / verify step |
+|---|---|---|---|
+| **Short context, prose (greedy)** | `"tf_mtp": "auto"` (MTP or DFlash2 each round) | **30.9 tok/s** | 2.36 |
+| **Short context, code (greedy)** | `"tf_mtp": "dflash"` (depth 7, confidence 0.4) | **40.0 tok/s** | 3.6 |
+| 32K context, prose (T = 1.0) | default MTP (`normed/normed`) | 24.6 tok/s | 1.94 |
+| 32K context, code (T = 1.0) | `"tf_mtp": "dflash"` | 32.4 tok/s | 3.26 |
+| Prefill / TTFT | 4K: 629-698 tok/s, 5.9-6.5 s · **8K: 773-783 tok/s, 10.4 s** · 32K: 705 tok/s, 46 s | | |
+| Context | one sequence at a time; `--context 36864` tested (~250-300K tokens estimated to fit; 1M needs decode context parallelism, not built yet) | | |
+
+## Short context, greedy
+
+| Draft | Prose | Code |
+|---|---|---|
+| MTP k = 2 (default) | 28.8 tok/s | 31.7 tok/s |
+| DFlash2 (depth 7, confidence 0.4) | 28.3 | **40.0** |
+| auto | **30.9** | 32.6 |
+
+## 32K context, sampled (temperature 1.0 / top-p 0.95, 512 tokens)
+
+The vLLM row is the same checkpoint on the same four Sparks with a tuned vLLM (EXL3 kernels, MTP k = 2, CUDA graphs,
+RoCE all-reduce).
 
 | Engine | Prose | Code | Step | Prefill 8K / 32K | TTFT 32K |
 |---|---|---|---|---|---|
 | TensorFold, MTP k = 2 (default) | **24.6 tok/s** | 27.3 tok/s | 78.5 ms | **773-783** / 705 tok/s | 46 s |
-| TensorFold, DFlash2 drafts (depth 7, confidence 0.4) | 23.0 | **32.4** | 87-101 ms | | |
-| TensorFold, auto (MTP or DFlash2 each round) | 23.6 | 27.6 | 88-90 ms | | |
+| TensorFold, DFlash2 | 23.0 | **32.4** | 87-101 ms | | |
+| TensorFold, auto | 23.6 | 27.6 | 88-90 ms | | |
 | vLLM, same checkpoint | 23.9 | 30.3 | 77-78 ms | ~755 / 749 tok/s | 43.6 s |
 
-Short context, greedy:
-
-| | Prose | Code |
-|---|---|---|
-| MTP | 28.8 tok/s | 31.7 tok/s |
-| DFlash2 | 28.3 | **40.0** (3.6 tokens a verify step) |
-| auto | **30.9** | 32.6 |
+For 1M-token contexts today, the vLLM path with decode context parallelism 4 serves a 1.23M-token KV pool at 16.6 prose
+/ 21.1 code tok/s; the TensorFold engine does not do 1M yet.
 
 DFlash2 drafts: [incoai/GLM-5.3-DFlash2](https://huggingface.co/incoai/GLM-5.3-DFlash2) (CC-BY-NC-ND-4.0), trained
 against BF16 GLM-5.3 — on the 2.75 bpw target its prose acceptance is modest; code gains most.
