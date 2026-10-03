@@ -1,0 +1,29 @@
+== unit: 12 passed (fixed 5.9e-8 vs atomic)
+== 18:22 e2e reproducibility (fixed-point kernel, defaults)
+fixed serial@32: = = =  DETERMINISTIC
+fixed dflash@32: = = =  DETERMINISTIC
+fixed dflash@8: = = =  DETERMINISTIC
+== prefill (fixed-point kernel; slots mode 944/976/899; atomic baseline 8K 1044-1087 / 32K 1035-1124 / 128K 996)
+  8137tok 917 tok/s TTFT 8.93s
+  32536tok 944 tok/s TTFT 34.58s
+  130222tok 867 tok/s TTFT 150.27s
+  needle 32768 pass True
+== 18:47 fixed point, slab elem 4
+  8137tok 879 tok/s TTFT 9.31s
+  32535tok 840 tok/s TTFT 38.93s
+  130222tok 830 tok/s TTFT 156.96s
+fixslab dflash@32: = = =  DETERMINISTIC
+== 18:58 unit (modes fixed/slots/slots16)
+..R=1024 mode 3: deterministic vs atomic rel 5.890e-08
+.R=1024 mode 2: deterministic vs atomic rel 6.786e-08
+.R=1024 mode 4: deterministic vs atomic rel 2.074e-04
+.R=4096 mode 3: deterministic vs atomic rel 5.944e-08
+.R=4096 mode 2: deterministic vs atomic rel 6.808e-08
+.R=4096 mode 4: deterministic vs atomic rel 2.073e-04
+14 passed in 87.57s (0:01:27)
+== 19:11 slots16 prefill (slots 944/976/899, fixed 917/944/867, atomic 1044-1087/1035-1124/996)
+  8137tok 1000 tok/s TTFT 8.18s
+  32535tok 969 tok/s TTFT 33.75s
+  130221tok 952 tok/s TTFT 136.78s
+slots16 dflash@32: = = =  DETERMINISTIC
+  needle 32768 pass True

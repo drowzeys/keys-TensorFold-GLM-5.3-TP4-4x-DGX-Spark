@@ -1,0 +1,79 @@
+== 14:06 health before
+  spark1 swap 0/15 si 66 so 0 buzz 0 firefox 0
+  spark2 swap 0/15 si 2 so 0 buzz 0 firefox 0
+  spark3 swap 0/15 si 0 so 0 buzz 0 firefox 0
+  spark4 swap 0/15 si 0 so 0 buzz 0 firefox 0
+[tensorfold] decode-window reductions: RoCE one-shot
+[tensorfold] rank 0: took rank 0's tiles (0 of 575 linears differed)
+[tensorfold] serving glm-5.3-tf at http://0.0.0.0:8890/v1 on CUDA, rank 0 of 4 (sampling: temperature 1.0, top_p 0.95; drafts: on; prompts: bf16 activations; context: 140000; loaded in 567.2s)
+== 14:16 decode 32K sampled (3 repeats each)
+  suite-dflash-32k suite-dflash-32k         prose  n=9 tps 30.56 tok/round 2.23 pass 73.0 ms
+  suite-dflash-32k suite-dflash-32k         code   n=6 tps 36.97 tok/round 2.97 pass 81.0 ms
+  suite-mtp-32k suite-mtp-32k            prose  n=9 tps 27.30 tok/round 1.90 pass 69.7 ms
+  suite-mtp-32k suite-mtp-32k            code   n=6 tps 29.88 tok/round 2.12 pass 70.1 ms
+== 14:41 decode short greedy (3 repeats each; 10-01 sweep: dflash prose 32.3 / code 41.5)
+  suite-dflash-short suite-dflash-short       prose  n=9 tps 32.84 tok/round 2.24 pass 68.3 ms
+  suite-dflash-short suite-dflash-short       code   n=6 tps 38.63 tok/round 2.97 pass 76.7 ms
+  suite-mtp-short suite-mtp-short          prose  n=9 tps 31.08 tok/round 1.94 pass 62.6 ms
+  suite-mtp-short suite-mtp-short          code   n=6 tps 35.09 tok/round 2.20 pass 62.7 ms
+== 14:49 prefill / TTFT
+  4102tok 917 tok/s TTFT 4.47s
+  8139tok 1087 tok/s TTFT 7.48s
+  32537tok 1036 tok/s TTFT 31.41s
+  130206tok 946 tok/s TTFT 137.71s
+  needle 32768 pass True ttft 31.9
+  needle 131072 pass True ttft 141.4
+== 14:55 health after A
+  spark1 swap 0/15 si 0 so 0 buzz 0 firefox 0
+  spark2 swap 1/15 si 0 so 0 buzz 0 firefox 0
+  spark3 swap 0/15 si 0 so 0 buzz 0 firefox 0
+  spark4 swap 1/15 si 0 so 0 buzz 0 firefox 0
+== 15:06 concurrency (--parallel 4, 32K context, DFlash2 drafts; replies checked equal to alone)
+  code T1.0 C1: agg 39.2 tok/s, per-stream 39.2, TTFT max 0.15s, alone-equal 3/3, failed 0
+  code T1.0 C2: agg 49.4 tok/s, per-stream 26.6, TTFT max 0.97s, alone-equal 6/6, failed 0
+  code T1.0 C4: agg 61.0 tok/s, per-stream 19.2, TTFT max 3.75s, alone-equal 12/12, failed 0
+  chat T1.0 C1: agg 37.4 tok/s, per-stream 37.4, TTFT max 0.25s, alone-equal 3/3, failed 0
+  chat T1.0 C2: agg 50.7 tok/s, per-stream 27.1, TTFT max 1.33s, alone-equal 6/6, failed 0
+  chat T1.0 C4: agg 61.1 tok/s, per-stream 18.5, TTFT max 4.19s, alone-equal 12/12, failed 0
+  code T0.0 C1: agg 60.3 tok/s, per-stream 60.3, TTFT max 0.15s, alone-equal 3/3, failed 0
+  code T0.0 C2: agg 74.0 tok/s, per-stream 43.5, TTFT max 1.22s, alone-equal 6/6, failed 0
+  code T0.0 C4: agg 83.3 tok/s, per-stream 30.2, TTFT max 4.86s, alone-equal 12/12, failed 0
+  chat T0.0 C1: agg 38.2 tok/s, per-stream 38.2, TTFT max 0.25s, alone-equal 3/3, failed 0
+  chat T0.0 C2: agg 50.7 tok/s, per-stream 27.9, TTFT max 1.29s, alone-equal 6/6, failed 0
+  chat T0.0 C4: agg 62.4 tok/s, per-stream 19.1, TTFT max 4.17s, alone-equal 12/12, failed 0
+== 15:13 done
+== 15:31 concurrency after whole-fill fix (FILL_MIN_ROWS 2048)
+  code T1.0 C1: agg 51.6 tok/s, per-stream 51.6, TTFT max 0.15s, alone-equal 3/3, failed 0
+  code T1.0 C2: agg 55.6 tok/s, per-stream 31.9, TTFT max 0.35s, alone-equal 6/6, failed 0
+  code T1.0 C4: agg 68.7 tok/s, per-stream 19.1, TTFT max 0.83s, alone-equal 12/12, failed 0
+  chat T1.0 C1: agg 34.2 tok/s, per-stream 34.2, TTFT max 0.24s, alone-equal 3/3, failed 0
+  chat T1.0 C2: agg 49.8 tok/s, per-stream 26.1, TTFT max 0.56s, alone-equal 6/6, failed 0
+  chat T1.0 C4: agg 64.9 tok/s, per-stream 17.2, TTFT max 1.29s, alone-equal 12/12, failed 0
+  code T0.0 C1: agg 56.3 tok/s, per-stream 56.3, TTFT max 0.15s, alone-equal 3/3, failed 0
+  code T0.0 C2: agg 78.0 tok/s, per-stream 39.8, TTFT max 0.37s, alone-equal 6/6, failed 0
+  code T0.0 C4: agg 96.4 tok/s, per-stream 25.1, TTFT max 0.9s, alone-equal 12/12, failed 0
+  chat T0.0 C1: agg 39.5 tok/s, per-stream 39.5, TTFT max 0.24s, alone-equal 3/3, failed 0
+  chat T0.0 C2: agg 56.9 tok/s, per-stream 29.0, TTFT max 0.55s, alone-equal 6/6, failed 0
+  chat T0.0 C4: agg 75.0 tok/s, per-stream 19.4, TTFT max 1.32s, alone-equal 12/12, failed 0
+== 15:49 PROMPT_ROWS 8192 (baseline 4096: 8K 1087 / 32K 1036 / 128K 946 tok/s)
+  8139tok 1003 tok/s TTFT 8.11s
+  32535tok 1124 tok/s TTFT 28.95s
+  130206tok 972 tok/s TTFT 133.93s
+  needle 32768 pass True
+  rows8192-dflash-32k      prose  n=3 tps 28.68 tok/round 2.06 pass 72.7 ms
+  rows8192-dflash-32k      code   n=2 tps 35.13 tok/round 2.77 pass 78.8 ms
+== 16:08 PROMPT_ROWS 16384 (baseline 4096: 8K 1087 / 32K 1036 / 128K 946 tok/s)
+  8137tok 449 tok/s TTFT 18.11s
+  32533tok 828 tok/s TTFT 39.29s
+  130204tok 797 tok/s TTFT 163.34s
+  needle 32768 pass True
+== 17:06 ADAPTIVE chunks (8192 for >= 24K, else 4096; defaults, no TF_ flags)
+  4100tok 922 tok/s TTFT 4.45s
+  8139tok 1044 tok/s TTFT 7.80s
+  16302tok 1089 tok/s TTFT 14.97s
+  32537tok 1038 tok/s TTFT 31.33s
+  130206tok 996 tok/s TTFT 130.67s
+  needle 32768 pass True ttft 30.6
+  needle 131072 pass True ttft 134.0
+  adapt-dflash-32k         prose  n=3 tps 27.45 tok/round 2.10 pass 75.4 ms
+  adapt-dflash-32k         code   n=2 tps 34.47 tok/round 2.82 pass 81.7 ms

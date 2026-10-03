@@ -1,0 +1,20 @@
+== 10:35 befd47d + stock incoai DFlash2, single stream
+  pub-dflash-32k           prose  n=9 tps 27.66 tok/round 2.12 pass 78.4 ms
+  pub-dflash-32k           code   n=6 tps 34.30 tok/round 2.99 pass 89.0 ms
+  pub-dflash-short         prose  n=9 tps 30.96 tok/round 2.23 pass 72.5 ms
+  pub-dflash-short         code   n=6 tps 39.96 tok/round 3.41 pass 84.8 ms
+  pub-auto-short           prose  n=9 tps 30.29 tok/round 2.09 pass 68.7 ms
+  pub-auto-short           code   n=6 tps 36.82 tok/round 2.73 pass 74.1 ms
+== 11:06 concurrency, stock DFlash2 drafts (--parallel 4, 32K)
+  code T1.0 C1: agg 41.6 tok/s, TTFT max 0.15s, alone-equal 3/3
+  code T1.0 C2: agg 49.9 tok/s, TTFT max 0.35s, alone-equal 6/6
+  code T1.0 C4: agg 62.6 tok/s, TTFT max 0.85s, alone-equal 12/12
+  chat T1.0 C1: agg 38.3 tok/s, TTFT max 0.25s, alone-equal 3/3
+  chat T1.0 C2: agg 54.3 tok/s, TTFT max 0.59s, alone-equal 6/6
+  chat T1.0 C4: agg 65.6 tok/s, TTFT max 1.4s, alone-equal 12/12
+  code T0.0 C1: agg 56.7 tok/s, TTFT max 0.15s, alone-equal 3/3
+  code T0.0 C2: agg 78.0 tok/s, TTFT max 0.37s, alone-equal 6/6
+  code T0.0 C4: agg 95.4 tok/s, TTFT max 0.96s, alone-equal 12/12
+  chat T0.0 C1: agg 39.1 tok/s, TTFT max 0.24s, alone-equal 3/3
+  chat T0.0 C2: agg 55.2 tok/s, TTFT max 0.58s, alone-equal 6/6
+  chat T0.0 C4: agg 69.7 tok/s, TTFT max 1.41s, alone-equal 12/12

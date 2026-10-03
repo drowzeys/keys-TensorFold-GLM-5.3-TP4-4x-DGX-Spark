@@ -1,0 +1,12 @@
+== default () NCCL_MAX_NCHANNELS=2 NCCL_PROTO=Simple 
+  8138tok 1044 tok/s TTFT 7.85s
+  32762tok 1035 tok/s TTFT 31.56s
+  decode nccl-default-mtp         prose  n=1 tps 27.76 tok/round 1.97 pass 70.8 ms
+== nch4 (NCCL_MAX_NCHANNELS=4) NCCL_PROTO=Simple NCCL_MAX_NCHANNELS=4 
+  8138tok 1049 tok/s TTFT 7.81s
+  32536tok 979 tok/s TTFT 33.51s
+  decode nccl-nch4-mtp            prose  n=1 tps 28.59 tok/round 2.05 pass 71.8 ms
+== ll128 (NCCL_PROTO=LL128) NCCL_MAX_NCHANNELS=2 NCCL_PROTO=LL128 
+  8137tok 977 tok/s TTFT 8.39s
+  32536tok 1002 tok/s TTFT 32.58s
+  decode nccl-ll128-mtp           prose  n=1 tps 29.06 tok/round 2.04 pass 70.3 ms
