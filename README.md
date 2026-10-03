@@ -2,11 +2,11 @@
 
 The full **GLM-5.3** (753B total, ~40B active, `glm_moe_dsa`) served natively by [TensorFold](https://github.com/ashhart/TensorFold)
 across **four NVIDIA DGX Sparks** (GB10, 128 GB unified memory each), one rank per Spark over their ConnectX-7 RoCE
-fabric — TensorFold's first tensor-parallel-4 engine. No vLLM in the serving path, and TensorFold's guarantee holds: a
-drafted reply is bit-identical to a serial one.
+fabric — TensorFold's first tensor-parallel-4 engine, no vLLM in the serving path. A drafted reply equals a serial
+one and concurrent replies equal the same request alone; see [Reproducibility](#reproducibility) for long prompts.
 
 - Code: [ashhart/TensorFold#159](https://github.com/ashhart/TensorFold/pull/159) (branch
-  [`drowzeys/TensorFold:glm-moe-dsa-tp4`](https://github.com/drowzeys/TensorFold/tree/glm-moe-dsa-tp4))
+  [`drowzeys/TensorFold:glm-moe-dsa-tp4`](https://github.com/drowzeys/TensorFold/tree/glm-moe-dsa-tp4), rebased on 0.6.1)
 - Weights: [drowzeys/keys-GLM-5.3-EXL3-2.75BPW](https://huggingface.co/drowzeys/keys-GLM-5.3-EXL3-2.75BPW)
   (EXL3, a bit width per routed expert averaging 2.75 bpw; KL 0.124 nats / top-1 89.6 % vs BF16 over 65,536 tokens)
 - How to run it: [one-shot.sh](one-shot.sh) with the prebuilt image (below), or [RECIPE.md](RECIPE.md) from source
@@ -17,93 +17,98 @@ drafted reply is bit-identical to a serial one.
 # on every Spark, once per boot
 sudo sysctl -w vm.compaction_proactiveness=0
 # from any machine that can ssh to the four Sparks
-NODES="spark1 spark2 spark3 spark4" MODEL=/models/GLM-5.3-EXL3-2.75BPW ./one-shot.sh up
-#   + DRAFT=/models/GLM-5.3-DFlash2 for DFlash2 / auto drafts
+NODES="spark1 spark2 spark3 spark4" MODEL=/models/GLM-5.3-EXL3-2.75BPW DRAFT=/models/GLM-5.3-DFlash2 ./one-shot.sh up
 curl http://spark1:8890/v1/chat/completions -H 'Content-Type: application/json' \
   -d '{"model": "glm-5.3-tf", "messages": [{"role": "user", "content": "Hello"}], "tf_mtp": "dflash"}'
 ```
 
-Image: `ghcr.io/drowzeys/keys-tensorfold-glm53-tp4-dgx-spark:2026-09-30` (CUDA 13 / GB10; TensorFold `glm_moe_dsa`
-with its CUDA extensions prebuilt, cuda-exl3, b12x RoCE; the fastest settings as defaults).
+Image: `ghcr.io/drowzeys/keys-tensorfold-glm53-tp4-dgx-spark:2026-10-03` (CUDA 13 / GB10; TensorFold `glm_moe_dsa`
+with its CUDA extensions prebuilt, cuda-exl3, b12x RoCE; the fastest settings are the defaults — no flags needed).
+`one-shot.sh` looks up each Spark's RoCE v2 GID itself (they can move across reboots).
 
 ## Best configurations at a glance
 
-Four DGX Sparks, single stream, full GLM-5.3 (2.75 bpw EXL3). Pick the draft by workload:
+Four DGX Sparks, full GLM-5.3 (2.75 bpw EXL3), image `2026-10-03`, default settings, the public
+[incoai/GLM-5.3-DFlash2](https://huggingface.co/incoai/GLM-5.3-DFlash2) draft. Means of 3 repeats.
 
-| Workload | Best configuration | Speed | Tokens / verify step |
+| Workload | Configuration | Speed | Tokens / verify step |
 |---|---|---|---|
-| **Short context, prose (greedy)** | `"tf_mtp": "auto"` (MTP or DFlash2 each round) | **30.9 tok/s** | 2.36 |
-| **Short context, code (greedy)** | `"tf_mtp": "dflash"` (depth 7, confidence 0.4) | **40.0 tok/s** | 3.6 |
-| 32K context, prose (T = 1.0) | default MTP (`normed/normed`) | 24.6 tok/s | 1.94 |
-| 32K context, code (T = 1.0) | `"tf_mtp": "dflash"` | 32.4 tok/s | 3.26 |
-| Prefill / TTFT | 4K: 629-698 tok/s, 5.9-6.5 s · **8K: 773-783 tok/s, 10.4 s** · 32K: 705 tok/s, 46 s | | |
-| **1M context** | `--context 1000000` (decode context parallelism 4): needles pass at 128K / 512K / **~1M (966,562 tokens)** | 25.9 prose / 28.6 code tok/s | |
+| **Short context, code (greedy)** | `"tf_mtp": "dflash"` | **40.0 tok/s** | 3.41 |
+| **Short context, prose (greedy)** | `"tf_mtp": "dflash"` | **31.0 tok/s** | 2.23 |
+| Short context, MTP (greedy) | default | 31.1 prose / 35.1 code | 62.6 ms a round |
+| **32K context, prose (T = 1.0)** | `"tf_mtp": "dflash"` | **27.7 tok/s** | 2.12 |
+| **32K context, code (T = 1.0)** | `"tf_mtp": "dflash"` | **34.3 tok/s** | 2.99 |
+| 32K context, MTP (T = 1.0) | default | 27.3 prose / 29.9 code | 69.7 ms a round |
+| **Prefill / TTFT** | 4K 922 tok/s (4.5 s) · 8K 1,044-1,087 (7.5-7.8 s) · 16K 1,089 (15.0 s) · **32K 1,035-1,124 (29-31 s)** · **128K 996 (131 s)** | | |
+| **4 concurrent streams** | `--parallel 4 --context 32768`, DFlash2 drafts | **69.7 chat / 95.4 code tok/s** aggregate (greedy), TTFT ≤ 1.4 s | |
+| 1M context | `--context 1000000` (decode context parallelism 4) | needles pass at 128K / 512K / ~1M (previous image; not re-run on `2026-10-03`) | |
 
-## Short context, greedy
+Needles (passphrase at half depth) pass at 32K and 128K on this build. Concurrent replies are checked equal to the
+same request alone (`tools/bench_concurrent.py --alone`: 63/63).
 
-| Draft | Prose | Code |
-|---|---|---|
-| MTP k = 2 (default) | 28.8 tok/s | 31.7 tok/s |
-| DFlash2 (depth 7, confidence 0.4) | 28.3 | **40.0** |
-| auto | **30.9** | 32.6 |
+## Compared with the previous image and vLLM (32K context, sampled)
 
-## 32K context, sampled (temperature 1.0 / top-p 0.95, 512 tokens)
-
-The vLLM row is the same checkpoint on the same four Sparks with a tuned vLLM (EXL3 kernels, MTP k = 2, CUDA graphs,
-RoCE all-reduce).
-
-| Engine | Prose | Code | Step | Prefill 8K / 32K | TTFT 32K |
+| | Prose | Code | Round | Prefill 8K / 32K | TTFT 32K / 128K |
 |---|---|---|---|---|---|
-| TensorFold, MTP k = 2 (default) | **24.6 tok/s** | 27.3 tok/s | 78.5 ms | **773-783** / 705 tok/s | 46 s |
-| TensorFold, DFlash2 | 23.0 | **32.4** | 87-101 ms | | |
-| TensorFold, auto | 23.6 | 27.6 | 88-90 ms | | |
-| vLLM, same checkpoint | 23.9 | 30.3 | 77-78 ms | ~755 / 749 tok/s | 43.6 s |
+| **TensorFold `2026-10-03`**, DFlash2 | **27.7 tok/s** | **34.3** | 78 / 89 ms | **1,044-1,087 / 1,035-1,124** | **29-31 s / 131 s** |
+| TensorFold `2026-10-03`, MTP | 27.3 | 29.9 | **69.7 ms** | | |
+| TensorFold `2026-09-30` (v0.5.0), MTP / DFlash2 | 24.6 / 23.0 | 27.3 / 32.4 | 78.5 / 87-101 ms | 773-783 / 705 | 46 s / 262 s |
+| vLLM, same checkpoint (EXL3 kernels, MTP k = 2, RoCE) | 23.9 | 30.3 | 77-78 ms | ~755 / 749 | 43.6 s / — |
 
-## 1M-token context (decode context parallelism 4)
+Short context, greedy code: 40.0 tok/s on both images. A DFlash2 draft fine-tuned on-policy against this
+checkpoint reaches 30.6 prose / 37.0 code at 32K (+10 % prose), but it derives from a CC-BY-NC-ND draft and is not
+redistributed.
 
-The KV cache is interleaved over the four ranks (~25 GB each at 1M); each rank scores its own keys for the DSA
-indexer, every rank takes the same global top-2048, attends all heads over its own keys, and the partials merge in
-rank order — drafted replies stay bit-identical to serial ones.
+## Reproducibility
 
-| Needle (passphrase at half depth) | Prompt | TTFT | Prefill | Result |
-|---|---|---|---|---|
-| 128K | 133,162 tok | 419 s | 318 tok/s | PASS |
-| 512K | 532,509 tok | 2,031 s | 262 tok/s | PASS |
-| ~1M | 966,562 tok | 4,245 s | 228 tok/s | PASS |
+Decode is row-invariant (rank-order sums, no atomics), so a drafted reply equals a serial one and concurrent replies
+equal the same request alone. Prompts longer than one prompt chunk (~4K tokens) go through the MoE prompt kernel,
+which by default adds a row's expert outputs with fp32 atomics in arrival order: the fastest prefill, but the same
+long prompt can give a different reply run to run (greedy replies diverged after 12-108 tokens). For reproducible
+long prompts:
 
 ```sh
-tools/tp4_run.sh serve --context 1000000     # from the TensorFold branch (see RECIPE.md); DCP turns on past 200K
+DOCKER_ENV="-e TF_EXL3_PROMPT_DET=slots16" ./one-shot.sh up   # fp16 expert rows summed in a fixed order
 ```
 
-The prebuilt image `2026-09-30` predates DCP; until it is refreshed, run 1M contexts from the branch.
+| `TF_EXL3_PROMPT_DET` | Same reply every run | Prefill 8K / 32K / 128K |
+|---|---|---|
+| `0` (default) | short prompts only | 1,044-1,087 / 1,035-1,124 / 996 tok/s |
+| `slots16` | yes (checked at 8K and 32K, serial and DFlash2) | 1,000 / 969 / 952 tok/s |
 
-DFlash2 drafts: [incoai/GLM-5.3-DFlash2](https://huggingface.co/incoai/GLM-5.3-DFlash2) (CC-BY-NC-ND-4.0), trained
-against BF16 GLM-5.3 — on the 2.75 bpw target its prose acceptance is modest; code gains most.
-
-## What made the difference on GB10
+## What changed since `2026-09-30`
 
 | Change | Effect |
 |---|---|
-| Fused, row-invariant kernels + CUDA-graph decode rounds | 310 → 97 ms a round |
-| One-shot RoCE all-reduce (rank-order sums, same bits as NCCL) for decode windows | NCCL all-gathers 96 → 68 µs |
-| Retiled EXL3 linears, reduced-vocabulary MTP draft head, tuned attention tilings | ~97 → 72 ms a round |
-| `vm.compaction_proactiveness=0` on every node | a quarter of rounds stalled ~130 ms by memory compaction: 115 → 72 ms mean |
-| MTP reads the final-normed target hidden (like vLLM) | 1.6 → 2.15 tokens a step |
-| Prompt path: 4096-row equal chunks, EXL3 decode-once GEMM, cuda-exl3 grouped experts sharing one weight copy, bf16 NCCL all-reduce | 175 → ~780 tok/s at 8K |
-| `NCCL_MAX_NCHANNELS=2` + two micro-batches per chunk | lets the prompt all-reduce run under compute (~2/3 hidden) |
-| DFlash2 with a confidence cutoff (stop the draft chain when the drafter is unsure) | code 31.7 → 40.0 tok/s (greedy) |
+| Rebased on TensorFold 0.6.1 | — (the rebase itself costs nothing) |
+| Grouped EXL3 decode linears (q_a + kv_a, wq_b + q_b, gate + up in one launch), PDL launches; tiles tuned at load and **every rank takes rank 0's** (per-rank picks let the slowest pace every layer) | 78.5 → 69.7 ms a round at 32K |
+| Indexer top-k: radix select for prompt chunks, `torch.topk` for decode windows | prefill +; decode 4 ms a round back |
+| Sequence-parallel prompt chunks, routed prompt experts for any K, per-shape prompt GEMM tiles, 8192-row chunks for long prompts | prefill 705 → ~1,040-1,120 tok/s at 32K, 128K TTFT 262 → 131 s |
+| Concurrent streams (`--parallel N`) with MTP or DFlash2 drafts per stream; short prompts fill whole | 4 streams ~70-95 tok/s aggregate, TTFT ≤ 1.4 s |
+| The runner refuses a `--context` × `--parallel` whose caches would not fit | GB10's unified memory swaps instead of failing: 4 × 140K rebooted all four nodes once |
+
+## Node notes that cost us time
+
+- `vm.compaction_proactiveness=0` on every node (compaction stalls a rank ~130 ms at a time).
+- RoCE GID indices can move across reboots (an IPv6 address on the fabric NIC took one's slot): resolve the RoCE v2
+  GID of each node's fabric IPv4 at launch. After a full-cluster reboot, ping the fabric peers before the first boot.
+- Anything else on a rank — a desktop browser, other containers — shows up as rank skew: all four wait for the
+  slowest at every all-reduce. Keep the Sparks clean.
+- `--parallel 4` needs a smaller context (each stream holds its own cache): `--context 32768` fits.
 
 ## This repo
 
-- [RECIPE.md](RECIPE.md) — how to run it (four Sparks, one launcher from any machine), the node settings that matter.
+- [RECIPE.md](RECIPE.md) — how to run it from source, the node settings that matter.
+- [one-shot.sh](one-shot.sh) — launcher for the prebuilt image from any machine.
 - [node/gb10-node-settings.sh](node/gb10-node-settings.sh) — the runtime setting to apply on every node.
-- [bench/](bench/) — the benches behind the tables (TensorFold single-stream decode, vLLM decode, prefill/TTFT).
+- [bench/](bench/) — the benches behind the tables; [evidence/](evidence/) — run logs and raw results.
 
 ## Credits
 
 [Z.ai](https://huggingface.co/zai-org) (GLM-5.3) · [ashhart / TensorFold](https://github.com/ashhart/TensorFold) (the
 engine this builds on, MIT) · [turboderp / exllamav3](https://github.com/turboderp-org/exllamav3) (EXL3) · vcruz305
 (per-expert mixed-width EXL3 work the quantization builds on) · cuda-exl3 (the grouped prompt GEMM) ·
-[b12x](https://github.com/local-inference-lab/b12x) (RoCEnante one-shot all-reduce) · incoai (the DFlash2 draft).
+[b12x](https://github.com/local-inference-lab/b12x) (RoCEnante one-shot all-reduce) · MiaAI-Lab (GLM prompt-kernel
+designs the prompt experts adapt) · incoai (the DFlash2 draft).
 
 Scripts here: MIT (see LICENSE). Model weights: the GLM-5.3 license of the base model.

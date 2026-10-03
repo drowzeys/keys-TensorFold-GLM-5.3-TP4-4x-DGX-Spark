@@ -1,0 +1,13 @@
+== 09:22 base ()
+base serial@32: 37 73 37  DIFFERS
+base mtp@32: 13 64 13  DIFFERS
+base dflash@32: 13 103 13  DIFFERS
+base dflash@8: 48 48 58  DIFFERS
+base dflash@16: 12 12 86  DIFFERS
+base serial@8: 17 58 17  DIFFERS
+== 09:44 experts0 (-e TF_EXL3_PROMPT_EXPERTS=0)
+experts0 serial@32: 13 13 118  DIFFERS
+experts0 dflash@32: 18 79 18  DIFFERS
+experts0 dflash@8: 33 65 33  DIFFERS
+  experts0 prefill 8138tok 953 tok/s TTFT 8.54s
+  experts0 prefill 32535tok 957 tok/s TTFT 34.00s

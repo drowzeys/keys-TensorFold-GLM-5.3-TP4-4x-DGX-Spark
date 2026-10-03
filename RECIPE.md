@@ -4,28 +4,35 @@ TensorFold's `glm_moe_dsa` family serves the full GLM-5.3 (753B total, ~40B acti
 four DGX Sparks (GB10, 128 GB unified memory each), one rank per Spark, over their ConnectX-7 200 GbE RoCE fabric.
 It is TensorFold's first four-rank engine (the CLI now takes `--tp 1 | 2 | 4`, per family).
 
-Everything TensorFold promises holds: a drafted reply is bit-identical to a serial one (every verify row has a serial
-step's bits: row-invariant kernels, rank-order fp32 sums), and every rank computes the same bits.
+Decode keeps TensorFold's guarantees: a drafted reply is bit-identical to a serial one (every verify row has a serial
+step's bits: row-invariant kernels, rank-order fp32 sums), concurrent replies equal the same request alone, and every
+rank computes the same bits. Prompts longer than one chunk (~4K tokens) use the MoE prompt kernel, whose default fp32
+atomic sums make such a prompt's reply vary run to run; `TF_EXL3_PROMPT_DET=slots16` makes them reproducible
+(fp16 expert rows summed in a fixed order; ~4-6 % slower prefill).
 
 ## Measured (four DGX Sparks, 2.75 bpw EXL3 checkpoint)
 
-Single stream, 32K-token context, temperature 1.0 / top-p 0.95, 512 tokens (the vLLM rows: the same checkpoint and
-hardware, vLLM with EXL3 kernels, MTP k = 2, CUDA graphs, RoCE all-reduce):
+Single stream, 32K-token context, temperature 1.0 / top-p 0.95, 512 tokens, 3 repeats; default settings, the public
+incoai DFlash2 draft (the vLLM row: the same checkpoint and hardware, vLLM with EXL3 kernels, MTP k = 2, CUDA graphs,
+RoCE all-reduce):
 
-| | Prose | Code | Step | Prefill 8K / 32K | TTFT 32K |
+| | Prose | Code | Round | Prefill 8K / 32K / 128K | TTFT 32K / 128K |
 |---|---|---|---|---|---|
-| TensorFold, MTP k = 2 | **24.6 tok/s** | 27.3 tok/s | 78.5 ms | 773-783 / 705 tok/s | 46 s |
-| TensorFold, DFlash2 (depth 7, confidence 0.4) | 23.0 | **32.4** | 87-101 ms | | |
-| vLLM (same checkpoint, tuned) | 23.9 | 30.3 | 77-78 ms | ~755 / 749 tok/s | 43.6 s |
+| TensorFold, DFlash2 (depth 7, confidence 0.3) | **27.7 tok/s** | **34.3 tok/s** | 78 / 89 ms | 1,044-1,087 / 1,035-1,124 / 996 tok/s | 29-31 s / 131 s |
+| TensorFold, MTP k = 2 | 27.3 | 29.9 | **69.7 ms** | | |
+| vLLM (same checkpoint, tuned) | 23.9 | 30.3 | 77-78 ms | ~755 / 749 / — tok/s | 43.6 s / — |
 
-Short context, greedy: MTP 28.8 prose / 31.7 code; DFlash2 28.3 / **40.0** (3.6 tokens a verify step).
+Short context, greedy: DFlash2 31.0 prose / **40.0** code (3.41 tokens a verify step); MTP 31.1 / 35.1 (62.6 ms a
+round). Four concurrent streams (`--parallel 4 --context 32768`, DFlash2 drafts per stream): 69.7 chat / 95.4 code
+tok/s aggregate greedy, TTFT ≤ 1.4 s.
 
 ### 1M-token context (decode context parallelism 4)
 
 `--context 1000000` (anything past 200K turns it on; `TF_GLM53_DCP=4` forces it): the KV cache is interleaved over the
 four ranks (position p on rank p % 4), each rank scores its own keys for the indexer and keeps a local top-2048, every
 rank takes the same global top-2048, attends all heads over its own keys, and the log-sum-exp partials merge in rank
-order — drafted replies still equal serial ones. ~25 GB of cache per rank at 1M.
+order — drafted replies still equal serial ones. ~25 GB of cache per rank at 1M. (Validated on the `2026-09-30`
+revision; not re-run on `2026-10-03`, whose indexer top-k changes also reach this path.)
 
 | Needle (passphrase at half depth) | Prompt | TTFT | Prefill | Result |
 |---|---|---|---|---|
@@ -47,7 +54,7 @@ nodes (an NFS export works; each rank reads only its share through safetensors s
 export NODES="spark1 spark2 spark3 spark4"   # fabric addresses, rank 0 first (serves HTTP)
 export IMAGE=<CUDA 13 + torch image>          # + cuda-exl3 and vLLM for the fast prompt path (optional)
 export CKPT=/models/GLM-5.3-EXL3-2.75BPW
-export GIDS="3 3 3 3"                         # RoCE v2 GID index of each rank's port
+export GIDS="3 3 3 3"                         # RoCE v2 GID index of each rank's port (check after reboots: they move)
 tools/tp4_run.sh comm                         # fabric check: exact reduce-scatter bits, collective latencies
 tools/tp4_run.sh serve --context 36864        # OpenAI-compatible server on rank 0, :8890
 ```
@@ -55,7 +62,7 @@ tools/tp4_run.sh serve --context 36864        # OpenAI-compatible server on rank
 DFlash2 drafts: add `DOCKER_ENV="-e TF_GLM53_DFLASH=/models/GLM-5.3-DFlash2"` (e.g.
 [incoai/GLM-5.3-DFlash2](https://huggingface.co/incoai/GLM-5.3-DFlash2)); requests choose with `"tf_mtp"`:
 `"normed/normed"` (MTP, default), `"dflash"`, or `"auto"` (MTP or DFlash2 each round, whichever is emitting faster).
-`~/tf-glm53/DFLASH_CFG` on every node (`{"depth": 7, "confidence": 0.4}`) tunes DFlash2 at run time.
+`~/tf-glm53/DFLASH_CFG` on every node (`{"depth": 7, "confidence": 0.3}`; 0.3 is the default) tunes DFlash2 at run time.
 
 Node settings that matter on GB10:
 
