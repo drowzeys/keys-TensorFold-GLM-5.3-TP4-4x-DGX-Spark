@@ -15,7 +15,7 @@
 #   ./one-shot.sh up | down | logs [RANK]
 # Before the first run, on every node: node/gb10-node-settings.sh (vm.compaction_proactiveness=0).
 set -u
-IMAGE=${IMAGE:-ghcr.io/drowzeys/keys-tensorfold-glm53-tp4-dgx-spark:2026-10-03}
+IMAGE=${IMAGE:-ghcr.io/drowzeys/keys-tensorfold-glm53-tp4-dgx-spark:2026-10-04}
 : "${NODES:?set NODES to the fabric addresses of the four Sparks, rank 0 first}"
 NODES=($NODES)
 IF=${IF:-enp1s0f1np1}
