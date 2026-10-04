@@ -20,6 +20,7 @@ Four DGX Sparks, full GLM-5.3 at 2.75 bpw (EXL3), default settings, the public
 | **TTFT** | **8K 7.8 s · 32K 29.3 s · 128K 130 s** | needles pass at 32K and 128K |
 | **4 concurrent streams** | **69.7 chat / 95.4 code tok/s** aggregate (greedy) | TTFT ≤ 1.4 s; replies equal the same request alone ¹ |
 | 1M context | needles pass at 128K / 512K / ~1M | decode context parallelism 4 (validated on `2026-09-30`) |
+| *With your own fine-tuned draft* | *+10.5 % prose / +7.8 % code at 32K* | [build your own](#build-your-own-draft-optional-10--prose) (we cannot share ours: incoai license) ¹ |
 
 ¹ measured on `2026-10-03` (same serving code; `2026-10-04` adds the TensorFold 0.6.5 merge).
 
@@ -86,8 +87,15 @@ DOCKER_ENV="-e TF_EXL3_PROMPT_DET=slots16" ./one-shot.sh up   # fp16 expert rows
 | `0` (default) | short prompts only | 1,045 / 1,115 / 1,000 tok/s |
 | `slots16` | yes (checked at 8K and 32K, serial and DFlash2) | 1,000 / 969 / 952 tok/s |
 
-A DFlash2 draft fine-tuned on-policy against this checkpoint reaches 30.6 prose / 37.0 code at 32K, but it derives
-from a CC-BY-NC-ND draft and is not redistributed.
+## Build your own draft (optional, +10 % prose)
+
+Fine-tuning the DFlash2 draft on this checkpoint's own outputs speeds it up further. On our build (image
+`2026-10-03`, same settings) our on-policy fine-tune gave **32K prose 27.7 → 30.6 tok/s (+10.5 %)**, **32K code
+34.3 → 37.0 (+7.8 %)**, short-context prose 31.0 → 32.8, and 4-stream chat 69.7 → 75.0 tok/s aggregate. **We cannot
+publish that draft**: it derives from [incoai/GLM-5.3-DFlash2](https://huggingface.co/incoai/GLM-5.3-DFlash2), whose
+CC-BY-NC-ND-4.0 license does not allow distributing derivatives. [draft-finetune/](draft-finetune/) has everything
+to build your own for non-commercial use: the prompt mix, on-policy capture from your running server
+(`TF_GLM53_CAPTURE_DIR`, ~9 h for 900 requests), and the trainer (one Spark, ~4 h) — then `DRAFT=<your draft>`.
 
 ## Node notes that cost us time
 
@@ -103,6 +111,7 @@ from a CC-BY-NC-ND draft and is not redistributed.
 
 - [RECIPE.md](RECIPE.md) — how to run it from source, the node settings that matter.
 - [one-shot.sh](one-shot.sh) — launcher for the prebuilt image from any machine.
+- [draft-finetune/](draft-finetune/) — build your own on-policy DFlash2 draft (optional, +10 % prose).
 - [node/gb10-node-settings.sh](node/gb10-node-settings.sh) — the runtime setting to apply on every node.
 - [bench/](bench/) — the benches behind the tables; [evidence/](evidence/) — run logs and raw results.
 
