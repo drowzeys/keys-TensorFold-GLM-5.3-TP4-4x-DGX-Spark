@@ -12,19 +12,19 @@ atomic sums make such a prompt's reply vary run to run; `TF_EXL3_PROMPT_DET=slot
 
 ## Measured (four DGX Sparks, 2.75 bpw EXL3 checkpoint)
 
-Single stream, 32K-token context, temperature 1.0 / top-p 0.95, 512 tokens, 3 repeats; default settings, the public
-incoai DFlash2 draft (the vLLM row: the same checkpoint and hardware, vLLM with EXL3 kernels, MTP k = 2, CUDA graphs,
-RoCE all-reduce):
+Image `2026-10-04` (TensorFold 0.6.5 + this engine), single stream, 3 repeats, default settings, the public incoai
+DFlash2 draft (the vLLM row: the same checkpoint and hardware, vLLM with EXL3 kernels, MTP k = 2, CUDA graphs, RoCE
+all-reduce):
 
 | | Prose | Code | Round | Prefill 8K / 32K / 128K | TTFT 32K / 128K |
 |---|---|---|---|---|---|
-| TensorFold, DFlash2 (depth 7, confidence 0.3) | **27.7 tok/s** | **34.3 tok/s** | 78 / 89 ms | 1,044-1,087 / 1,035-1,124 / 996 tok/s | 29-31 s / 131 s |
-| TensorFold, MTP k = 2 | 27.3 | 29.9 | **69.7 ms** | | |
-| vLLM (same checkpoint, tuned) | 23.9 | 30.3 | 77-78 ms | ~755 / 749 / — tok/s | 43.6 s / — |
+| TensorFold, DFlash2 (depth 7, confidence 0.3), 32K, T = 1.0 | **29.2 tok/s** | **34.5 tok/s** | 75 / 83 ms | **1,045 / 1,115 / 1,000 tok/s** | **29.3 s / 130 s** |
+| TensorFold, DFlash2, short context, greedy | 31.4 | **40.2** | 72 / 83 ms | | |
+| TensorFold, MTP k = 2, 32K (on `2026-10-03`) | 27.3 | 29.9 | **69.7 ms** | | |
+| vLLM (same checkpoint, tuned), 32K | 23.9 | 30.3 | 77-78 ms | ~755 / 749 / — tok/s | 43.6 s / — |
 
-Short context, greedy: DFlash2 31.0 prose / **40.0** code (3.41 tokens a verify step); MTP 31.1 / 35.1 (62.6 ms a
-round). Four concurrent streams (`--parallel 4 --context 32768`, DFlash2 drafts per stream): 69.7 chat / 95.4 code
-tok/s aggregate greedy, TTFT ≤ 1.4 s.
+Four concurrent streams (`--parallel 4 --context 32768`, DFlash2 drafts per stream, on `2026-10-03`): 69.7 chat /
+95.4 code tok/s aggregate greedy, TTFT ≤ 1.4 s. Needles pass at 32K and 128K.
 
 ### 1M-token context (decode context parallelism 4)
 
@@ -32,7 +32,7 @@ tok/s aggregate greedy, TTFT ≤ 1.4 s.
 four ranks (position p on rank p % 4), each rank scores its own keys for the indexer and keeps a local top-2048, every
 rank takes the same global top-2048, attends all heads over its own keys, and the log-sum-exp partials merge in rank
 order — drafted replies still equal serial ones. ~25 GB of cache per rank at 1M. (Validated on the `2026-09-30`
-revision; not re-run on `2026-10-03`, whose indexer top-k changes also reach this path.)
+revision; not re-run since, and the indexer top-k changes reach this path.)
 
 | Needle (passphrase at half depth) | Prompt | TTFT | Prefill | Result |
 |---|---|---|---|---|

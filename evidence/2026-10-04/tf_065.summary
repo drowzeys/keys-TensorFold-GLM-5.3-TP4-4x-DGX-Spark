@@ -1,0 +1,47 @@
+== 21:07 tests on final-065 c95e6d1
+  .2: 1 failed, 39 passed, 1 warning in 483.58s (0:08:03)
+    .2 FAILED tests/cuda/test_glm_moe_dsa_prompt_sp.py::test_engine_reply_with_sp_prompt
+  .3: 9 failed, 220 passed, 36 skipped in 582.05s (0:09:42)
+    .3 FAILED tests/cuda/test_exl3_experts.py::test_decode_matches_exllamav3_reconstruct[2-3]
+    .3 FAILED tests/cuda/test_exl3_experts.py::test_decode_matches_exllamav3_reconstruct[2-5]
+    .3 FAILED tests/cuda/test_exl3_experts.py::test_decode_matches_exllamav3_reconstruct[2-7]
+    .3 FAILED tests/cuda/test_glm_moe_dsa_multi.py::test_concurrent_streams_equal_alone_four_ranks
+    .3 FAILED tests/cuda/test_glm_moe_dsa_multi.py::test_concurrent_streams_equal_alone_graphs
+    .3 FAILED tests/cuda/test_glm_moe_dsa_multi.py::test_engine_parallel_scheduler
+    .3 FAILED tests/cuda/test_glm_moe_dsa_multi.py::test_fill_between_layers_four_ranks
+    .3 FAILED tests/cuda/test_glm_moe_dsa_multi.py::test_fill_between_layers_graphs
+    .3 FAILED tests/cuda/test_glm_moe_dsa_multi.py::test_fill_between_layers_sp_four_ranks
+  .1: 
+== 21:39 round 2 on final-065 965c80a (swap cleared, a container per file)
+  sp065 #1: 1 passed in 241.70s (0:04:01)
+  engine065 #1: 4 passed in 485.34s (0:08:05)
+  sp065 #2: 1 passed in 248.97s (0:04:08)
+  multi065 #1: 
+  sp065 #3: 1 passed in 247.96s (0:04:07)
+  sp_premerge #1: 1 passed in 245.81s (0:04:05)
+  mdflash065 #1: 4 passed, 1 warning in 420.07s (0:07:00)
+  sp_premerge #2: 1 passed in 226.04s (0:03:46)
+  sp_premerge #3: 1 passed in 206.16s (0:03:26)
+== 22:50 round 3 on 72887ce (TF_GLM53_PROMPT_ROWS=4096 in tests, --memory 100g)
+  test_glm_moe_dsa_multi.py: 3 failed, 3 passed, 1 warning in 558.74s (0:09:18) 0 killed
+      FAILED tests/cuda/test_glm_moe_dsa_multi.py::test_fill_between_layers_four_ranks
+      FAILED tests/cuda/test_glm_moe_dsa_multi.py::test_fill_between_layers_graphs
+      FAILED tests/cuda/test_glm_moe_dsa_multi.py::test_fill_between_layers_sp_four_ranks
+  test_glm_moe_dsa_fused.py: 8 passed, 2 warnings in 976.19s (0:16:16) 0 killed
+  swap spark1: 0 up 1 hour, 3 minutes 
+  swap spark2: 0 up 1 day, 9 hours, 24 minutes 
+  swap spark3: 0 up 1 hour, 19 minutes 
+  swap spark4: 0 up 1 day, 9 hours, 27 minutes 
+BENCH BOOT FAILED
+== 00:18 multi-stream file on 48c8196: 
+== 00:31 bench (stock draft; published 2026-10-03: 32K 27.7/34.3, short 31.0/40.0, prefill 8K 1044-1087 32K 1035-1124 128K 996)
+  v065-dflash-32k          prose  n=9 tps 29.18 tok/round 2.20 pass 75.2 ms
+  v065-dflash-32k          code   n=6 tps 34.49 tok/round 2.84 pass 82.5 ms
+  v065-dflash-short        prose  n=9 tps 31.38 tok/round 2.25 pass 71.5 ms
+  v065-dflash-short        code   n=6 tps 40.17 tok/round 3.32 pass 82.7 ms
+  8137tok 1045 tok/s TTFT 7.84s
+  32535tok 1115 tok/s TTFT 29.28s
+  130221tok 1000 tok/s TTFT 130.20s
+  needle 32768 pass True
+  needle 131072 pass True
+== 01:05 multi-stream file on 48c8196: 6 passed, 1 warning in 554.91s (0:09:14)
