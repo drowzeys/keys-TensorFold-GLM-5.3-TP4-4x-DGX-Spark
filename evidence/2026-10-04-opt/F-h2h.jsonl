@@ -1,0 +1,8 @@
+{"label": "F-h2h-mtp", "mode": "normed/normed", "prompt": "Write a detailed explanation", "tokens": 300, "client_tps": 41.07, "runs": [40.25, 41.88], "tokens_per_round": 2.354}
+{"label": "F-h2h-mtp", "mode": "normed/normed", "prompt": "Write a Python function that", "tokens": 300, "client_tps": 40.84, "runs": [39.74, 41.93], "tokens_per_round": 2.373}
+{"label": "F-h2h-mtp", "mode": "normed/normed", "prompt": "List the planets of the sola", "tokens": 300, "client_tps": 43.13, "runs": [43.14, 43.12], "tokens_per_round": 2.411}
+{"label": "F-h2h-mtp", "mode": "normed/normed", "prompt": "Translate to French: The wea", "tokens": 300, "client_tps": 42.6, "runs": [42.61, 42.6], "tokens_per_round": 2.392}
+{"label": "F-h2h-df", "mode": "dflash", "prompt": "Write a detailed explanation", "tokens": 300, "client_tps": 48.57, "runs": [46.21, 50.93], "tokens_per_round": 3.934}
+{"label": "F-h2h-df", "mode": "dflash", "prompt": "Write a Python function that", "tokens": 300, "client_tps": 52.04, "runs": [49.87, 54.2], "tokens_per_round": 4.211}
+{"label": "F-h2h-df", "mode": "dflash", "prompt": "List the planets of the sola", "tokens": 300, "client_tps": 50.4, "runs": [48.22, 52.58], "tokens_per_round": 3.833}
+{"label": "F-h2h-df", "mode": "dflash", "prompt": "Translate to French: The wea", "tokens": 300, "client_tps": 53.61, "runs": [51.1, 56.12], "tokens_per_round": 4.397}

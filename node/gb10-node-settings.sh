@@ -6,3 +6,6 @@ set -e
 # instead of 70 before this).
 sudo sysctl -w vm.compaction_proactiveness=0
 # Check: no bulk NFS / copies over the RoCE port while serving (they add decode latency).
+# GB10's GPU memory is unified and not reclaimable: with the default vm.swappiness=60 the kernel swapped the engine out
+# (swap full while loading, 25+ GB still "available") rather than drop the checkpoint's page cache. Prefer the cache.
+sudo sysctl -w vm.swappiness=1

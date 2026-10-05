@@ -34,8 +34,7 @@ def prompt(n_tok, seed):
 
 def run(n_tok, seed):
     body = {"model": model, "messages": [{"role": "user", "content": prompt(n_tok, seed)}], "max_tokens": a.decode,
-            "temperature": 0.6, "stream": True, "stream_options": {"include_usage": True},
-            "chat_template_kwargs": {"enable_thinking": False}}
+            "temperature": 0.6, "stream": True, "stream_options": {"include_usage": True}}
     req = urllib.request.Request(a.url + "/v1/chat/completions", data=json.dumps(body).encode(),
                                  headers={"Content-Type": "application/json"})
     t0 = time.time(); first = last = None; usage = None

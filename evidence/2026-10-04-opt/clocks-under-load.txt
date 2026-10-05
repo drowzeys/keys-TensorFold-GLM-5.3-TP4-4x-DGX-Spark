@@ -1,0 +1,8 @@
+A .1 busy n=1126 clk avg 2417 [2229-2470] MHz power 65.2 W temp 82 C
+A .2 busy n=1128 clk avg 2428 [2359-2483] MHz power 64.8 W temp 76 C
+A .3 busy n=1126 clk avg 2434 [2340-2489] MHz power 62.2 W temp 78 C
+A .5 busy n=1130 clk avg 2403 [1976-2483] MHz power 67.6 W temp 82 C
+B .1 busy n=1088 clk avg 2423 [2288-2470] MHz power 66.0 W temp 81 C
+B .2 busy n=1088 clk avg 2423 [2359-2483] MHz power 65.8 W temp 77 C
+B .3 busy n=1082 clk avg 2437 [2340-2489] MHz power 63.1 W temp 78 C
+B .5 busy n=1091 clk avg 2407 [2216-2483] MHz power 68.3 W temp 81 C

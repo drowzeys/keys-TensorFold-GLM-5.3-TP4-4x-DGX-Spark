@@ -10,21 +10,10 @@ rank computes the same bits. Prompts longer than one chunk (~4K tokens) use the 
 atomic sums make such a prompt's reply vary run to run; `TF_EXL3_PROMPT_DET=slots16` makes them reproducible
 (fp16 expert rows summed in a fixed order; ~4-6 % slower prefill).
 
-## Measured (four DGX Sparks, 2.75 bpw EXL3 checkpoint)
+## Measured
 
-Image `2026-10-04` (TensorFold 0.6.5 + this engine), single stream, 3 repeats, default settings, the public incoai
-DFlash2 draft (the vLLM row: the same checkpoint and hardware, vLLM with EXL3 kernels, MTP k = 2, CUDA graphs, RoCE
-all-reduce):
-
-| | Prose | Code | Round | Prefill 8K / 32K / 128K | TTFT 32K / 128K |
-|---|---|---|---|---|---|
-| TensorFold, DFlash2 (depth 7, confidence 0.3), 32K, T = 1.0 | **29.2 tok/s** | **34.5 tok/s** | 75 / 83 ms | **1,045 / 1,115 / 1,000 tok/s** | **29.3 s / 130 s** |
-| TensorFold, DFlash2, short context, greedy | 31.4 | **40.2** | 72 / 83 ms | | |
-| TensorFold, MTP k = 2, 32K (on `2026-10-03`) | 27.3 | 29.9 | **69.7 ms** | | |
-| vLLM (same checkpoint, tuned), 32K | 23.9 | 30.3 | 77-78 ms | ~755 / 749 / — tok/s | 43.6 s / — |
-
-Four concurrent streams (`--parallel 4 --context 32768`, DFlash2 drafts per stream, on `2026-10-03`): 69.7 chat /
-95.4 code tok/s aggregate greedy, TTFT ≤ 1.4 s. Needles pass at 32K and 128K.
+Current numbers: the README's performance table (image `2026-10-04-opt`, the `glm53-tp4-opt` branch built from source
+gives the same). Every bench is in `bench/`, its logs in `evidence/`.
 
 ### 1M-token context (decode context parallelism 4)
 
@@ -46,7 +35,8 @@ Checkpoint quality vs BF16 (exllamav3 `model_diff`, 65,536 tokens): KL 0.124 nat
 
 ## Run
 
-Weights: an EXL3 GLM-5.3 checkpoint, e.g. [keys-GLM-5.3-EXL3-2.75BPW](https://huggingface.co/drowzeys/keys-GLM-5.3-EXL3-2.75BPW)
+Source: `git clone -b glm53-tp4-opt https://github.com/drowzeys/TensorFold` (TensorFold 0.6.5 + the `glm_moe_dsa`
+engine with the MiaAI-Lab / bertholomus levers; README's table of changes). Weights: an EXL3 GLM-5.3 checkpoint, e.g. [keys-GLM-5.3-EXL3-2.75BPW](https://huggingface.co/drowzeys/keys-GLM-5.3-EXL3-2.75BPW)
 (routed experts 2/3/4-bit per expert, mean 2.75; 5-bit non-expert layers; 8-bit MTP), at the same path on all four
 nodes (an NFS export works; each rank reads only its share through safetensors slices).
 
@@ -54,14 +44,14 @@ nodes (an NFS export works; each rank reads only its share through safetensors s
 export NODES="spark1 spark2 spark3 spark4"   # fabric addresses, rank 0 first (serves HTTP)
 export IMAGE=<CUDA 13 + torch image>          # + cuda-exl3 and vLLM for the fast prompt path (optional)
 export CKPT=/models/GLM-5.3-EXL3-2.75BPW
-export GIDS="3 3 3 3"                         # RoCE v2 GID index of each rank's port (check after reboots: they move)
+tools/tp4_run.sh rails                        # read-only: each rank's RoCE rails (both PCIe twins, by subnet) + GIDs
 tools/tp4_run.sh comm                         # fabric check: exact reduce-scatter bits, collective latencies
-tools/tp4_run.sh serve --context 36864        # OpenAI-compatible server on rank 0, :8890
+tools/tp4_run.sh serve --context 140000       # OpenAI-compatible server on rank 0, :8890 (RAILS=1: one rail)
 ```
 
 DFlash2 drafts: add `DOCKER_ENV="-e TF_GLM53_DFLASH=/models/GLM-5.3-DFlash2"` (e.g.
 [incoai/GLM-5.3-DFlash2](https://huggingface.co/incoai/GLM-5.3-DFlash2)); requests choose with `"tf_mtp"`:
-`"normed/normed"` (MTP, default), `"dflash"`, or `"auto"` (MTP or DFlash2 each round, whichever is emitting faster).
+`"normed/normed"` (MTP k = 2, default: fastest on prose), `"dflash"` (fastest on code), or `"auto"` (MTP or DFlash2 each round, whichever is emitting faster).
 `~/tf-glm53/DFLASH_CFG` on every node (`{"depth": 7, "confidence": 0.3}`; 0.3 is the default) tunes DFlash2 at run time.
 
 Node settings that matter on GB10:

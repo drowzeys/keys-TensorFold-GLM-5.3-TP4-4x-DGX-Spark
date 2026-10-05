@@ -1,0 +1,36 @@
+warmup: 33.12 tok/s, ttft 40.9s
+prose_beekeeper     27.88 tok/s  tok/round 2.036  pass 73.0 ms  ttft 29.2s
+prose_lighthouse    29.04 tok/s  tok/round 1.996  pass 68.7 ms  ttft 29.1s
+prose_nurse         28.86 tok/s  tok/round 2.004  pass 69.4 ms  ttft 29.1s
+code_cache          33.70 tok/s  tok/round 2.344  pass 69.5 ms  ttft 29.2s
+code_parser         33.04 tok/s  tok/round 2.312  pass 70.0 ms  ttft 29.3s
+prose_beekeeper     31.45 tok/s  tok/round 2.156  pass 68.5 ms  ttft 29.3s
+prose_lighthouse    28.48 tok/s  tok/round 1.958  pass 68.7 ms  ttft 29.3s
+prose_nurse         31.12 tok/s  tok/round 2.138  pass 68.7 ms  ttft 29.5s
+code_cache          33.94 tok/s  tok/round 2.366  pass 69.7 ms  ttft 29.3s
+code_parser         32.33 tok/s  tok/round 2.261  pass 69.9 ms  ttft 29.3s
+prose_beekeeper     30.14 tok/s  tok/round 2.077  pass 68.9 ms  ttft 29.3s
+prose_lighthouse    28.98 tok/s  tok/round 2.004  pass 69.1 ms  ttft 29.4s
+prose_nurse         31.26 tok/s  tok/round 2.147  pass 68.7 ms  ttft 29.3s
+code_cache          34.55 tok/s  tok/round 2.41  pass 69.8 ms  ttft 29.6s
+code_parser         33.08 tok/s  tok/round 2.312  pass 69.9 ms  ttft 29.3s
+OPT3-mtp3-32k            prose  n=9 tps 29.04 tok/round 2.04 pass 68.7 ms
+OPT3-mtp3-32k            code   n=6 tps 33.39 tok/round 2.33 pass 69.8 ms
+warmup: 22.88 tok/s, ttft 1.0s
+prose_beekeeper     35.10 tok/s  tok/round 2.241  pass 63.8 ms  ttft 0.3s
+prose_lighthouse    32.20 tok/s  tok/round 1.996  pass 62.0 ms  ttft 0.3s
+prose_nurse         36.36 tok/s  tok/round 2.271  pass 62.5 ms  ttft 0.3s
+code_cache          37.60 tok/s  tok/round 2.377  pass 63.2 ms  ttft 0.3s
+code_parser         38.29 tok/s  tok/round 2.422  pass 63.3 ms  ttft 0.3s
+prose_beekeeper     35.96 tok/s  tok/round 2.241  pass 62.3 ms  ttft 0.3s
+prose_lighthouse    32.12 tok/s  tok/round 1.996  pass 62.1 ms  ttft 0.3s
+prose_nurse         36.38 tok/s  tok/round 2.271  pass 62.4 ms  ttft 0.3s
+code_cache          37.71 tok/s  tok/round 2.377  pass 63.0 ms  ttft 0.3s
+code_parser         38.39 tok/s  tok/round 2.422  pass 63.1 ms  ttft 0.3s
+prose_beekeeper     36.00 tok/s  tok/round 2.241  pass 62.3 ms  ttft 0.3s
+prose_lighthouse    32.21 tok/s  tok/round 1.996  pass 62.0 ms  ttft 0.3s
+prose_nurse         36.29 tok/s  tok/round 2.271  pass 62.6 ms  ttft 0.3s
+code_cache          37.60 tok/s  tok/round 2.377  pass 63.2 ms  ttft 0.3s
+code_parser         38.34 tok/s  tok/round 2.422  pass 63.2 ms  ttft 0.3s
+OPT3-mtp3-short          prose  n=9 tps 35.96 tok/round 2.24 pass 62.3 ms
+OPT3-mtp3-short          code   n=6 tps 38.00 tok/round 2.40 pass 63.2 ms

@@ -1,0 +1,56 @@
+warmup: 14.05 tok/s, ttft 47.4s
+prose_beekeeper     25.45 tok/s  tok/round 2.036  pass 80.0 ms  ttft 30.9s
+prose_lighthouse    30.92 tok/s  tok/round 2.271  pass 73.4 ms  ttft 31.0s
+prose_nurse         32.90 tok/s  tok/round 2.469  pass 75.0 ms  ttft 30.9s
+code_cache          34.80 tok/s  tok/round 2.777  pass 79.8 ms  ttft 31.1s
+code_parser         39.95 tok/s  tok/round 3.43  pass 85.8 ms  ttft 31.2s
+prose_beekeeper     29.59 tok/s  tok/round 2.086  pass 70.5 ms  ttft 31.0s
+prose_lighthouse    29.36 tok/s  tok/round 2.103  pass 71.6 ms  ttft 31.0s
+prose_nurse         26.10 tok/s  tok/round 2.004  pass 76.8 ms  ttft 31.0s
+code_cache          34.04 tok/s  tok/round 2.855  pass 83.9 ms  ttft 31.4s
+code_parser         39.72 tok/s  tok/round 3.276  pass 82.5 ms  ttft 31.2s
+prose_beekeeper     28.94 tok/s  tok/round 2.069  pass 71.5 ms  ttft 31.2s
+prose_lighthouse    29.37 tok/s  tok/round 2.052  pass 69.9 ms  ttft 31.1s
+prose_nurse         30.94 tok/s  tok/round 2.251  pass 72.8 ms  ttft 31.1s
+code_cache          36.83 tok/s  tok/round 2.887  pass 78.4 ms  ttft 31.2s
+code_parser         39.03 tok/s  tok/round 3.097  pass 79.4 ms  ttft 31.3s
+OPT1-df-32k              prose  n=9 tps 29.37 tok/round 2.09 pass 72.8 ms
+OPT1-df-32k              code   n=6 tps 37.93 tok/round 2.99 pass 81.1 ms
+warmup: 20.84 tok/s, ttft 0.8s
+prose_beekeeper     33.00 tok/s  tok/round 2.312  pass 70.1 ms  ttft 0.3s
+prose_lighthouse    32.43 tok/s  tok/round 2.174  pass 67.0 ms  ttft 0.3s
+prose_nurse         32.28 tok/s  tok/round 2.156  pass 66.8 ms  ttft 0.3s
+code_cache          40.61 tok/s  tok/round 3.097  pass 76.3 ms  ttft 0.3s
+code_parser         43.58 tok/s  tok/round 3.384  pass 77.7 ms  ttft 0.3s
+prose_beekeeper     36.22 tok/s  tok/round 2.312  pass 63.8 ms  ttft 0.3s
+prose_lighthouse    32.94 tok/s  tok/round 2.174  pass 66.0 ms  ttft 0.3s
+prose_nurse         33.22 tok/s  tok/round 2.156  pass 64.9 ms  ttft 0.8s
+code_cache          43.12 tok/s  tok/round 3.097  pass 71.8 ms  ttft 0.3s
+code_parser         45.21 tok/s  tok/round 3.384  pass 74.9 ms  ttft 0.3s
+prose_beekeeper     35.98 tok/s  tok/round 2.312  pass 64.3 ms  ttft 0.3s
+prose_lighthouse    34.73 tok/s  tok/round 2.174  pass 62.6 ms  ttft 0.3s
+prose_nurse         34.55 tok/s  tok/round 2.156  pass 62.4 ms  ttft 0.3s
+code_cache          43.49 tok/s  tok/round 3.097  pass 71.2 ms  ttft 0.3s
+code_parser         46.35 tok/s  tok/round 3.384  pass 73.0 ms  ttft 0.3s
+OPT1-df-short            prose  n=9 tps 33.22 tok/round 2.17 pass 64.9 ms
+OPT1-df-short            code   n=6 tps 43.54 tok/round 3.24 pass 73.9 ms
+warmup: 33.58 tok/s, ttft 31.8s
+prose_beekeeper     28.87 tok/s  tok/round 1.799  pass 62.3 ms  ttft 31.7s
+prose_lighthouse    29.25 tok/s  tok/round 1.806  pass 61.7 ms  ttft 31.2s
+prose_nurse         31.86 tok/s  tok/round 1.965  pass 61.7 ms  ttft 31.3s
+code_cache          33.54 tok/s  tok/round 2.086  pass 62.2 ms  ttft 31.4s
+code_parser         37.80 tok/s  tok/round 2.366  pass 62.6 ms  ttft 31.4s
+prose_beekeeper     30.03 tok/s  tok/round 1.851  pass 61.6 ms  ttft 31.2s
+prose_lighthouse    30.88 tok/s  tok/round 1.907  pass 61.8 ms  ttft 31.3s
+prose_nurse         30.98 tok/s  tok/round 1.907  pass 61.6 ms  ttft 31.3s
+code_cache          32.92 tok/s  tok/round 2.036  pass 61.8 ms  ttft 31.4s
+code_parser         35.13 tok/s  tok/round 2.174  pass 61.9 ms  ttft 31.3s
+prose_beekeeper     29.54 tok/s  tok/round 1.812  pass 61.3 ms  ttft 31.3s
+prose_lighthouse    32.25 tok/s  tok/round 1.996  pass 61.9 ms  ttft 31.2s
+prose_nurse         32.48 tok/s  tok/round 1.988  pass 61.2 ms  ttft 31.2s
+code_cache          33.96 tok/s  tok/round 2.112  pass 62.2 ms  ttft 31.3s
+code_parser         34.09 tok/s  tok/round 2.129  pass 62.4 ms  ttft 31.3s
+OPT1-mtp-32k             prose  n=9 tps 30.88 tok/round 1.91 pass 61.7 ms
+OPT1-mtp-32k             code   n=6 tps 34.03 tok/round 2.12 pass 62.2 ms
+OPT1               prompt    8138 tok  TTFT    7.96 s  prefill    1029 tok/s  decode@depth  30.0 tok/s  (runs 2)
+OPT1               prompt   32535 tok  TTFT   31.20 s  prefill    1047 tok/s  decode@depth  36.2 tok/s  (runs 2)

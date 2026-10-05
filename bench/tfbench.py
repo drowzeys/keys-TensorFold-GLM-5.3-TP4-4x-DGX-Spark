@@ -19,7 +19,7 @@ def run(a, task, seed, max_tokens=None):
     if not a.no_context:
         prompt = "Background reading:\n" + Path(a.context_file).read_text() + "\n\nTask:\n" + prompt
     body = dict(model="glm-5.3-tf", messages=[dict(role="user", content=prompt)], max_tokens=max_tokens or a.tokens,
-                stream=True, chat_template_kwargs=dict(enable_thinking=False), seed=seed,
+                stream=True, seed=seed,
                 temperature=0.0 if a.greedy else a.temperature, top_p=0.95)
     if a.mode:
         body["tf_mtp"] = a.mode

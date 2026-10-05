@@ -1,0 +1,67 @@
+11:34 tests-opt1: .1 test_exl3_experts_decode_paths.py : 16 passed in 40.98s
+11:34 tests-opt1: .1 test_exl3_experts.py : 1 failed, 62 passed, 14 skipped in 1.01s
+11:34 tests-opt1: .1 test_group_kernel_smem.py : 6 passed, 1 skipped in 0.47s
+11:34 tests-opt1: .1 bench_exl3_experts_decode.py : 
+11:36 tests-opt1: .2 test_glm53_l2pf.py : 8 passed, 14 warnings in 184.16s (0:03:04)
+11:37 tests-opt1: .2 test_glm_moe_dsa_index_bucket.py : 9 passed, 1 warning in 10.38s
+11:37 tests-opt1: .5 test_glm_moe_dsa_multi_dflash.py : 1 failed, 1 passed, 14 warnings in 236.08s (0:03:56)
+11:37 tests-opt1: .5 test_glm_moe_dsa_rank_checks.py : 2 passed in 1.37s
+11:37 tests-opt1: .5 test_cuda_server_health.py : 6 passed in 0.23s
+11:37 tests-opt1: .5 test_sampling.py : 4 passed in 0.44s
+11:37 tests-opt1: .5 test_cuda_nucleus.py : 10 passed in 3.07s
+11:37 tests-opt1: .5 test_glm_moe_dsa_prefixes.py : 23 passed in 0.14s
+11:37 tests-opt1: .5 test_glm53_depth_policy.py : 6 passed in 0.03s
+11:38 tests-opt1: .3 test_glm_moe_dsa_engine.py : 1 failed, 14 warnings in 263.86s (0:04:23)
+11:40 tests-opt1: .3 test_glm_moe_dsa_multi.py : 1 failed, 1 passed, 15 warnings in 163.27s (0:02:43)
+11:42 tests-opt1: .3 test_glm_moe_dsa_engine.py [-e TF_GLM53_VERIFY_HEAD=fp8]: 1 failed, 14 warnings in 98.49s (0:01:38)
+11:42 tests-opt1b: .5 test_glm_moe_dsa_engine.py : 1 failed, 14 warnings in 259.69s (0:04:19)
+11:43 tests-bisS: .5 test_glm_moe_dsa_engine.py [-e TF_GLM53_SIDE=0]: docker: Error response from daemon: Conflict. The container name "/tftest" is already in use by container "abee15cb0f94fe737afbca94422934167f280d0e3e5d269c70c89
+11:43 tests-bisS: rerun done
+11:46 tests-opt1b: .5 test_glm_moe_dsa_multi_dflash.py : 1 failed, 2 passed, 15 warnings in 231.35s (0:03:51)
+11:46 tests-opt1b: rerun done
+11:47 tests-bisL: .1 test_glm_moe_dsa_engine.py [-e TF_GLM53_L2PF=0]: 1 failed, 14 warnings in 250.05s (0:04:10)
+11:47 tests-bisL: rerun done
+11:50 tests-opt1: .3 test_glm_moe_dsa_reuse.py : 5 passed, 14 warnings in 471.35s (0:07:51)
+11:51 tests-bisS: .5 test_glm_moe_dsa_engine.py [-e TF_GLM53_SIDE=0]: 1 failed, 14 warnings in 275.99s (0:04:35)
+11:51 tests-bisS: rerun done
+11:53 tests-bisS: .5 test_glm_moe_dsa_engine.py : 
+11:53 tests-bisS: rerun done
+11:58 tests-opt1: .2 test_glm_moe_dsa_fused.py : 11 passed, 16 warnings in 1266.13s (0:21:06)
+12:00 tests-opt1: .2 test_glm53_side_stream.py : 2 passed, 15 warnings in 134.49s (0:02:14)
+12:03 tests-opt1: .2 test_glm53_mtp_reuse.py : 2 passed, 15 warnings in 162.94s (0:02:42)
+12:03 tests-opt1: ALL DONE
+12:13 tests-opt2: .3 test_glm_moe_dsa_multi_dflash.py [-e CUDA_MODULE_LOADING=EAGER]: 3 passed, 1 skipped, 15 warnings in 546.44s (0:09:06)
+12:13 tests-opt2: rerun done
+12:19 tests-opt2: .2 test_glm_moe_dsa_multi.py [-e CUDA_MODULE_LOADING=EAGER]: 8 passed, 1 skipped, 15 warnings in 944.43s (0:15:44)
+12:19 tests-opt2: rerun done
+12:51 tests-bisE: .1 test_glm_moe_dsa_engine.py [-e CUDA_MODULE_LOADING=EAGER]: 
+12:51 tests-bisE: rerun done
+13:02 ab: BASE healthy
+13:34 ab: BASE: BASE-df-32k/prose: 25.84 (82.2ms) BASE-df-32k/code: 32.80 (90.6ms) BASE-df-short/prose: 28.02 (79.6ms) BASE-df-short/code: 36.21 (89.1ms) BASE-mtp-32k/prose: 25.56 (76.0ms) BASE-mtp-32k/code: 27.94 (76.5ms)  | prefill 8138tok TTFT 7.93s 1033tok/s;32536tok TTFT 30.26s 1079tok/s; | h2h 38.4 37.19 41.32 43.87
+13:49 ab: OPT1 healthy (4 rail lines; [tensorfold] output head: draft head q4 (128 MiB), reduced draft vocabulary q4 (27 MiB);[tensorfold] decode-window reductions: RoCE one-shot;[tensorfold] L2 prefetch in decode windows (bulk, up to 8 MiB a site): a 78 sites 8.0 MiB,;)
+14:20 ab: OPT1: OPT1-df-32k/prose: 29.37 (72.8ms) OPT1-df-32k/code: 37.93 (81.1ms) OPT1-df-short/prose: 33.22 (64.9ms) OPT1-df-short/code: 43.54 (73.9ms) OPT1-mtp-32k/prose: 30.88 (61.7ms) OPT1-mtp-32k/code: 34.03 (62.2ms)  | prefill 8138tok TTFT 7.96s 1029tok/s;32535tok TTFT 31.20s 1047tok/s; | h2h 43.96 49.34 47.1 58.87
+14:32 ab: OPT2 healthy (4 rail lines; [tensorfold] output head: draft head q4 (128 MiB), reduced draft vocabulary q4 (27 MiB);[tensorfold] decode-window reductions: RoCE one-shot;[tensorfold] L2 prefetch in decode windows (bulk, up to 8 MiB a site): a 78 sites 8.0 MiB,;)
+15:02 ab: OPT2: OPT2-df-32k/prose: 29.41 (71.8ms) OPT2-df-32k/code: 38.48 (78.9ms) OPT2-df-short/prose: 34.55 (62.0ms) OPT2-df-short/code: 41.17 (69.9ms) OPT2-mtp-32k/prose: 31.12 (61.2ms) OPT2-mtp-32k/code: 35.06 (61.4ms)  | prefill 8138tok TTFT 7.83s 1046tok/s;32762tok TTFT 29.97s 1090tok/s; | h2h 45.93 43.21 49.78 60.84
+15:14 ab: OPT3 (MTP-3 + reuse) healthy
+15:31 ab: OPT3: OPT3-mtp3-32k/prose: 29.04 (68.7ms) OPT3-mtp3-32k/code: 33.39 (69.8ms) OPT3-mtp3-short/prose: 35.96 (62.3ms) OPT3-mtp3-short/code: 38.00 (63.2ms)  | h2h 41.48 41.37 43.52 43.2
+15:31 ab: AB DONE
+15:44 ab2: clean: 1 free 116 swap 0; 2 free 117 swap 0; 3 free 116 swap 0; 5 free 117 swap 0; 
+15:55 ab2: R1 healthy
+16:05 ab2: R1 (4 channels): prefill 8218tok TTFT 9.41s 885tok/s;32535tok TTFT 44.84s 733tok/s; | R1-mtp-32k/prose: 30.77 (61.5ms) R1-mtp-32k/code: 33.78 (62.5ms) 
+16:05 ab2: NCCL channels -> 2
+16:06 ab2: clean: 1 free 117 swap 0; 2 free 117 swap 0; 3 free 117 swap 0; 5 free 117 swap 0; 
+16:16 ab2: R2 healthy
+16:30 ab2: R2 (reuse on): cold prefill 8217tok TTFT 11.16s 733tok/s;32762tok TTFT 35.30s 925tok/s; | R2-mtp-32k/prose: 30.58 (61.2ms) R2-mtp-32k/code: 35.55 (61.5ms)  | reuse: turn1_cold prompt 60237 cached 0 ttft 57.58s prefill 57.32435049000196 replay False;turn2_warm prompt 60440 cached 60237 ttft 0.74s prefill 0.6741176220093621 replay False;turn2_cold prompt 60440 cached 0 ttft 57.74s prefill 57.50558638200164 replay False;turn2_resend prompt 60440 cached 0 ttft 56.86s prefill 56.80457711700001 replay False;system_a prompt 14763 cached 0 ttft 16.09s prefill 15.898162095007137 replay False;system_b_warm prompt 14765 cached 14752 ttft 0.49s prefill 0.3519883279950591 replay False;system_b_cold prompt 14765 cached 0 ttft 14.42s prefill 14.39304920900031 replay False;turn2 warm == cold DIFFERENT;resend == warm DIFFERENT;system b warm == cold DIFFERENT;
+16:30 ab2: prompt reuse default -> 1
+16:31 ab3: clean: 1 free 116 swap 0; 2 free 117 swap 0; 3 free 116 swap 0; 5 free 117 swap 0; 
+16:42 ab3: F healthy
+17:24 ab3: F: F-mtp-32k/prose: 30.97 (60.6ms) F-mtp-32k/code: 34.31 (61.1ms) F-df-32k/prose: 29.65 (71.0ms) F-df-32k/code: 39.02 (76.7ms) F-mtp-short/prose: 36.34 (54.6ms) F-mtp-short/code: 41.45 (55.1ms) F-df-short/prose: 34.19 (63.5ms) F-df-short/code: 45.73 (73.7ms)  | prefill 8138tok TTFT 7.99s 1024tok/s;32536tok TTFT 30.05s 1087tok/s;130220tok TTFT 131.59s 990tok/s; | needles {"tokens": 28453, "s": 27.0, "found": false, "answer": "The user is asking for the passphrase th"} {"tokens": 117783, "s": 117.8, "found": false, "answer": "The user is asking for the passphrase th"}  | h2h normed:41.07 normed:40.84 normed:43.13 normed:42.6 dflash:48.57 dflash:52.04 dflash:50.4 dflash:53.61
+17:24 ab3: clean: 1 free 116 swap 0; 2 free 117 swap 0; 3 free 117 swap 0; 5 free 117 swap 0; 
+17:36 ab3: C-normed healthy
+17:43 ab3: C-normed: {"label": "", "prompt": "chat", "temperature": 1.0, "streams": 2, "failed": 0, "unmeasured": 0, "aggregate_tps": 51.1, "per_stream_tps": 25.8, "ttft_s_max": 0.46, "steady_tps": 52.0, "alone": {"equal": 6, "unequal": 0, "failed": 0}};{"label": "", "prompt": "chat", "temperature": 1.0, "streams": 4, "failed": 0, "unmeasured": 0, "aggregate_tps": 69.3, "per_stream_tps": 18.2, "ttft_s_max": 0.91, "steady_tps": 73.6, "alone": {"equal": 12, "unequal": 0, "failed": 0}};{"label": "", "prompt": "code", "temperature": 0.0, "streams": 1, "failed": 0, "unmeasured": 0, "aggregate_tps": 44.2, "per_stream_tp
+17:43 ab3: clean: 1 free 117 swap 0; 2 free 117 swap 0; 3 free 117 swap 0; 5 free 117 swap 0; 
+17:55 ab3: C-dflash healthy
+18:01 ab3: C-dflash: {"label": "", "prompt": "chat", "temperature": 1.0, "streams": 2, "failed": 0, "unmeasured": 0, "aggregate_tps": 56.6, "per_stream_tps": 28.9, "ttft_s_max": 0.45, "steady_tps": 58.2, "alone": {"equal": 6, "unequal": 0, "failed": 0}};{"label": "", "prompt": "chat", "temperature": 1.0, "streams": 4, "failed": 0, "unmeasured": 0, "aggregate_tps": 75.5, "per_stream_tps": 19.9, "ttft_s_max": 0.92, "steady_tps": 80.2, "alone": {"equal": 12, "unequal": 0, "failed": 0}};{"label": "", "prompt": "code", "temperature": 0.0, "streams": 1, "failed": 0, "unmeasured": 0, "aggregate_tps": 67.2, "per_stream_tp
+18:01 ab3: clean: 1 free 117 swap 0; 2 free 117 swap 0; 3 free 117 swap 0; 5 free 117 swap 0; 
+18:01 ab3: AB2 DONE
+18:30 ab3: clean: 1 free 117 swap 0; 2 free 117 swap 0; 3 free 117 swap 0; 5 free 117 swap 0; 

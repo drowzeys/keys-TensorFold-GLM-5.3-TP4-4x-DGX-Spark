@@ -1,0 +1,3 @@
+prose    41.8 tok/s (300 tokens, greedy, thinking on, request time)
+code     38.1 tok/s (300 tokens, greedy, thinking on, request time)
+prefill + answer 25470 tokens: 25.0 s; needle PASS
