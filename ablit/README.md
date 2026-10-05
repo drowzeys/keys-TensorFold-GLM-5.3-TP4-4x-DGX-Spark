@@ -3,6 +3,9 @@
 Live weights: `/mnt/spark2-models-local/GLM-5.3-EXL3-2.75-mixedK-EXL3NE-ablit`
 (hardlink overlay of `…/GLM-5.3-EXL3-2.75-mixedK-EXL3NE`; stock tree is untouched).
 
+Published: [drowzeys/keys-GLM-5.3-EXL3-2.75BPW-Abliterated](https://huggingface.co/drowzeys/keys-GLM-5.3-EXL3-2.75BPW-Abliterated)
+(gated, automatic approval after the Responsible Use form).
+
 Donor: [drowzeys/keys-GLM-5.3-EXL3-Abliterated](https://huggingface.co/drowzeys/keys-GLM-5.3-EXL3-Abliterated)
 (Blackfrost rank-1 derisk, α=3.0, baked into native F16 `o_proj` / residual `down_proj` for layers 2–49).
 
