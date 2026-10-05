@@ -18,7 +18,7 @@
 #                                                            right after up: it drops page cache on the nodes while they load)
 #   ./one-shot.sh bench        short decode + 32K prefill    ./one-shot.sh down | logs [RANK]
 set -u
-IMAGE=${IMAGE:-ghcr.io/drowzeys/keys-tensorfold-glm53-tp4-dgx-spark:2026-10-04-opt}
+IMAGE=${IMAGE:-ghcr.io/drowzeys/keys-tensorfold-glm53-tp4-dgx-spark:2026-10-05}
 : "${NODES:?set NODES to the fabric addresses of the four Sparks, rank 0 first}"
 NODES=($NODES)
 [ ${#NODES[@]} -eq 4 ] || { echo "NODES must list exactly four Sparks (rank 0 first)"; exit 1; }
@@ -115,6 +115,14 @@ up() {
   local mounts="-v $MODEL:$MODEL:ro" denv="" r n
   # a clean start: page cache dropped (an image pull or unpack leaves tens of GB that GB10's GPU allocations cannot use)
   for n in "${NODES[@]}"; do ssh "$n" 'sync; sudo -n sysctl -q -w vm.drop_caches=3' >/dev/null 2>&1 & done; wait
+  # a lane stopped seconds ago may not have handed its GPU memory back yet: starting then left a node with ~1 GB free
+  # after warm-up (2026-10-05). Wait until every node is back near full (up to 2 min).
+  local i ok
+  for i in $(seq 1 24); do ok=1
+    for n in "${NODES[@]}"; do
+      a=$(ssh "$n" "awk '/MemAvailable/{print int(\$2/1048576)}' /proc/meminfo" 2>/dev/null); [ "${a:-0}" -ge 100 ] || ok=0
+    done; [ $ok = 1 ] && break; sleep 5; done
+  [ $ok = 1 ] || echo "warning: a node still has under 100 GB available; another job may be using its memory (./one-shot.sh check)"
   if [ -n "$DRAFT" ]; then mounts="$mounts -v $DRAFT:$DRAFT:ro"; denv="-e TF_GLM53_DFLASH=$DRAFT"; fi
   for r in 3 2 1 0; do
     ssh "${NODES[$r]}" "docker rm -f $NAME-r$r >/dev/null 2>&1; docker run -d --name $NAME-r$r --gpus all \
@@ -133,7 +141,14 @@ wait_up() {
   local i
   for i in $(seq 1 120); do
     for n in "${NODES[@]}"; do ssh -o ConnectTimeout=5 "$n" 'sync; sudo -n sysctl -q -w vm.drop_caches=1' >/dev/null 2>&1 & done; wait
-    curl -s -m 5 -o /dev/null -w '%{http_code}' "$URL/v1/models" | grep -q 200 && { echo "up: $URL/v1"; return 0; }
+    if curl -s -m 5 -o /dev/null -w '%{http_code}' "$URL/v1/models" | grep -q 200; then
+      echo "up: $URL/v1"
+      for n in "${NODES[@]}"; do
+        a=$(ssh "$n" "awk '/MemAvailable/{print int(\$2/1048576)}' /proc/meminfo" 2>/dev/null)
+        echo "  $n: ${a} GB available"; [ "${a:-0}" -ge 6 ] || echo "  WARN $n has under 6 GB available while serving: ./one-shot.sh down, wait a minute, up again"
+      done
+      return 0
+    fi
     for r in 0 1 2 3; do
       ssh "${NODES[$r]}" "docker ps -q -f name=$NAME-r$r" | grep -q . ||
         { echo "rank $r exited:"; ssh "${NODES[$r]}" "docker logs --tail 25 $NAME-r$r 2>&1"; return 1; }

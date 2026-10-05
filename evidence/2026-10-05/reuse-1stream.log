@@ -1,0 +1,10 @@
+turn1_cold     prompt  93047 cached      0 ttft    84.58s prefill 84.35043876199052 replay False
+turn2_warm     prompt  93250 cached  93047 ttft     0.85s prefill 0.703041259010206 replay False
+turn2_cold     prompt  93250 cached      0 ttft    85.65s prefill 85.55632818600861 replay False
+turn2_resend   prompt  93250 cached  93250 ttft     0.15s prefill 0.00047365100181195885 replay True
+system_a       prompt  14763 cached      0 ttft    13.69s prefill 13.665911906005931 replay False
+system_b_warm  prompt  14765 cached  14752 ttft     0.38s prefill 0.34980561200063676 replay False
+system_b_cold  prompt  14765 cached      0 ttft    13.53s prefill 13.510151028007385 replay False
+turn2 warm == cold       DIFFERENT
+resend == warm           DIFFERENT
+system b warm == cold    DIFFERENT

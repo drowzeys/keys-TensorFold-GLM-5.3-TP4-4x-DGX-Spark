@@ -2,25 +2,27 @@
 
 The full **GLM-5.3** (753B total, ~40B active) served natively by [TensorFold](https://github.com/ashhart/TensorFold)
 across **four NVIDIA DGX Sparks** (GB10, one rank per Spark over ConnectX-7 RoCE). No vLLM in the serving path.
-Image `ghcr.io/drowzeys/keys-tensorfold-glm53-tp4-dgx-spark:2026-10-04-opt`. **The default needs no extra draft model**
+Image `ghcr.io/drowzeys/keys-tensorfold-glm53-tp4-dgx-spark:2026-10-05` (= `latest`). **The default needs no extra draft model**
 (GLM-5.3's own MTP layer drafts); DFlash2 is an optional add-on.
 
 **Abliterated weights:** [drowzeys/keys-GLM-5.3-EXL3-2.75BPW-Abliterated](https://huggingface.co/drowzeys/keys-GLM-5.3-EXL3-2.75BPW-Abliterated)
 (gated, automatic approval after the Responsible Use form). Stock parent:
 [drowzeys/keys-GLM-5.3-EXL3-2.75BPW](https://huggingface.co/drowzeys/keys-GLM-5.3-EXL3-2.75BPW). Method: [ablit/](ablit/).
 
-## Performance (image `2026-10-04-opt`, thinking on)
+## Performance (image `2026-10-05`, thinking on)
 
 Four DGX Sparks, the published image through `one-shot.sh`, default settings, **thinking on** (GLM-5.3 is a reasoning
 model: we measure it the way it is meant to be used, and publish no thinking-off numbers).
 
 | Summary | Speed |
 |---|---|
-| **Prose** (`./one-shot.sh bench`, greedy, 300 tokens, whole request) | **41.8 tok/s** |
-| **Code** (same) | **38.1 tok/s** |
-| **25K-token prompt** (prefill + answer, needle found) | **25.0 s** |
+| **Prose** (`./one-shot.sh bench`, greedy, 300 tokens, whole request) | **40.2 tok/s** |
+| **Code** (same) | **39.0 tok/s** |
+| **25K-token prompt** (prefill + answer, needle found) | **25.3 s** |
 | **Prefill** at 128K tokens | **1,038 tok/s** (TTFT 125 s) |
-| **4 streams, aggregate** (greedy, DFlash2): prose / code | **123.7 / 168.6 tok/s** (MTP: 118.5 / 134.0) |
+| **Turn 2 of a 93K-token conversation** (prompt reuse) | **0.85 s** to first token (85.7 s without) |
+| **4 streams, aggregate** (greedy chat, thinking on): prose / code | **78.7 / 100.2 tok/s** |
+| **1M context**: needle at 905K tokens | **PASS**, decode **33.7 tok/s** at that depth |
 
 | Single stream, thinking on | MTP = 2 (default, no extra model) | DFlash2 (optional draft) |
 |---|---|---|
@@ -31,21 +33,46 @@ model: we measure it the way it is meant to be used, and publish no thinking-off
 The detailed rows use `bench/tfbench.py` (3 prose + 2 code prompts, 512 tokens; the 32K rows put ~32K tokens of
 background text before each request).
 
-| Concurrent streams, greedy (aggregate tok/s) | MTP = 2 | DFlash2 |
+### Prompt reuse (on by default from `2026-10-05`)
+
+A follow-up turn, an identical resend or a new conversation with the same system prompt resumes from the kept prompt
+state instead of reading everything again (`TF_GLM53_PROMPT_REUSE=1`, the image default; `=0` turns it off). Measured
+through `one-shot.sh` on `2026-10-05`:
+
+| | Without reuse | With reuse |
 |---|---|---|
-| **Prose, 1 stream** | 38.3 | **44.5** |
-| **Prose, 4 streams** | **118.5** | **123.7** |
-| **Code, 1 stream** | 44.2 | **67.2** |
-| **Code, 4 streams** | **134.0** | **168.6** |
-| Sampled (T = 1.0), 4 streams: prose / code | 69.3 / 71.0 | 75.5 / 63.6 |
+| Turn 2 of a 93K-token conversation (single stream) | 85.7 s | **0.85 s** |
+| Identical resend of that 93K prompt | 85.7 s | **0.15 s** |
+| New conversation, same 14.7K-token system prompt | 13.5 s | **0.38 s** |
+| Same, 4 streams x 32K: turn 2 at 25K / resend / shared system prompt | 22.0 / 22.0 / 9.2 s | **0.69 / 0.04 / 0.28 s** |
 
-`PARALLEL=4 CONTEXT=32768`, `tools/bench_concurrent.py --alone` (256-token replies; every concurrent reply checked equal
-to the same request alone: 126 / 126; TTFT ≤ 0.93 s). Measured 2026-10-04 on this engine before its final memory
-fixes; the prose prompts ran with thinking on, the code rows are raw code completions.
+A cold prompt costs the same as before (`one-shot.sh bench` 25.3 s on the 25K prompt against 25.0 s without reuse).
+With the default (fastest) MoE prompt kernel a resumed prompt is a valid prefill, not byte-identical to a cold one;
+`TF_EXL3_PROMPT_DET=slots16` makes them identical.
 
-Memory: GPU memory on GB10 is unified. With the node settings (`vm.swappiness=1`) and `one-shot.sh` (page cache
-dropped at start and while loading), each Spark keeps ~9-15 GB free while serving a 140K window with DFlash2 loaded,
-and never swaps (traced every 5-10 s over short, 32K and 128K requests).
+### Concurrent streams
+
+| `PARALLEL=4 CONTEXT=32768`, greedy chat, thinking on (MTP drafts) | 1 stream | 4 streams (aggregate) |
+|---|---|---|
+| Prose | 34.7 tok/s | **78.7 tok/s** |
+| Code | 39.1 tok/s | **100.2 tok/s** |
+
+`bench/conc_chat.py` (the tfbench prompts as chat requests, 512 tokens; TTFT ≤ 0.64 s). Earlier we published 118.5 /
+134.0 here: those ran prose with thinking off and code as raw completions, which is not how the model is used.
+
+### 1M context (`CONTEXT=1000000`)
+
+Decode context parallelism over the four ranks (one stream). Validated on `2026-10-04-opt` (same engine), thinking on,
+a passphrase at half depth (`bench/needle.py`):
+
+| Needle | Prompt | Time to answer | Prefill | Decode at depth |
+|---|---|---|---|---|
+| ~125K | 114,944 tokens | 4.9 min | 394 tok/s | **37.0 tok/s** |
+| ~500K | 456,383 tokens | 21.6 min | 352 tok/s | **35.7 tok/s** |
+| ~1M | 905,182 tokens | 49 min | 307 tok/s | **33.7 tok/s** |
+
+All three answered exactly. Against the `2026-09-30` image: prefill +35 % at ~1M (228 → 307 tok/s), decode ~26 → 34-37
+tok/s. Each Spark kept 15-16 GB free with no swap for the whole run.
 
 ### Same prompts as bertholomus' full GLM-5.3 TP4 recipe
 
@@ -62,6 +89,16 @@ whole request (they ran thinking off). Ours, same prompts and timing, **thinking
 
 Their numbers are from their repository, not re-measured here. Their quant is larger (3.0 bpw, KL 0.109 vs our 0.124:
 better quality), so this compares recipes, not equal-quality builds.
+
+## What changed in `2026-10-05`
+
+- **Prompt reuse on by default**: kept prompt states (system prompt, earlier turns, identical resends) at assistant
+  openers, at most one copy a conversation, nothing extra on a cold prompt; a resend after other requests replays.
+  Built after MiaAI-Lab's 0008 / 0015 / 0042 / 0063.
+- **Copy drafts** (prompt-lookup drafts, after MiaAI-Lab 0007 / 0032) are in the engine but **off by default**
+  (`TF_GLM53_COPY_DRAFTS=1` to try): not yet validated on a live server.
+- **Memory hardening** (below): `one-shot.sh up` waits for every node to give back the memory of a lane stopped seconds
+  earlier, and `wait` reports each node's headroom.
 
 ## What changed in `2026-10-04-opt`
 
@@ -113,8 +150,12 @@ curl http://spark1:8890/v1/chat/completions -H 'Content-Type: application/json' 
   BY-NC-ND 4.0: non-commercial, no derivatives), `DRAFT=/models/GLM-5.3-DFlash2 ./one-shot.sh up`, and send
   `"tf_mtp": "dflash"` (or `"auto"`) per request.
 - 4 streams: `PARALLEL=4 CONTEXT=32768 ./one-shot.sh up`. 1M context: `CONTEXT=1000000` (decode context parallelism
-  over the four ranks; needles passed at 128K / 512K / ~1M on `2026-09-30`).
-- Code: TensorFold fork branch [`drowzeys/TensorFold:glm53-tp4-opt`](https://github.com/drowzeys/TensorFold/tree/glm53-tp4-opt)
+  over the four ranks, one stream; needles pass at 115K / 456K / 905K).
+- **Agents (Hermes, OpenClaw, ...)**: `PARALLEL=4 CONTEXT=32768` with prompt reuse (default). An agent resends a large
+  system prompt and history every step; reuse makes each step start in ~0.15-1 s instead of ~16 s, and 4 streams stop
+  side requests from queueing. Set the agent's context to 64K or less (Hermes: `context_length: 64000`, `max_tokens:
+  8192`, `compression.threshold: 0.4` keeps a conversation under 32K). For long documents use the 1M lane instead.
+- Code: TensorFold fork branch [`drowzeys/TensorFold:glm53-tp4-2026-10-05`](https://github.com/drowzeys/TensorFold/tree/glm53-tp4-2026-10-05)
   ([PR #159](https://github.com/ashhart/TensorFold/pull/159) carries the base engine). Weights:
   [drowzeys/keys-GLM-5.3-EXL3-2.75BPW](https://huggingface.co/drowzeys/keys-GLM-5.3-EXL3-2.75BPW) (KL 0.124 nats /
   top-1 89.6 % vs BF16). Abliterated pack:
@@ -134,6 +175,24 @@ reply run to run). `DOCKER_ENV="-e TF_EXL3_PROMPT_DET=slots16"` makes long promp
 Fine-tuning the DFlash2 draft on this checkpoint's own outputs raised 32K prose 27.7 → 30.6 and code 34.3 → 37.0 tok/s
 on our `2026-10-03` build. We cannot publish that draft (incoai's CC BY-NC-ND-4.0 license); [draft-finetune/](draft-finetune/)
 builds your own for non-commercial use.
+
+## Memory safety on GB10 (built into the recipe)
+
+GB10's GPU memory is the system's unified memory: a node that runs short swaps the engine out, and a node that runs
+out stalls until the watchdog reboots it. What the recipe does about it, and why:
+
+| Step | Where | Why |
+|---|---|---|
+| `vm.swappiness=1` | `node/gb10-node-settings.sh` (every boot); `check` fails without it | with the default 60 the kernel swapped the engine out while it loaded, rather than drop the checkpoint's page cache (swap full with 25+ GB still "available") |
+| Each shard leaves the page cache once read | the engine (`posix_fadvise` after every layer) | ~250 GB of checkpoint streams through the page cache, which GB10's GPU allocations cannot use |
+| Page cache dropped at `up`, and every 15 s during `wait` | `one-shot.sh` (passwordless sudo; `check` warns without it) | the node exporting the checkpoint over NFS caches what it serves the other ranks; an image pull leaves tens of GB cached |
+| `up` waits until every node is back near full memory | `one-shot.sh` | a lane started seconds after another stopped came up with ~1 GB free after warm-up (2026-10-05) |
+| `wait` prints each node's free memory, warns under 6 GB | `one-shot.sh` | catch a bad start before it serves |
+| `check` warns on swap in use, other GPU processes, < 100 GB free | `one-shot.sh` | anything else on a rank also slows every all-reduce |
+| Decode graphs: index-key buckets in powers of two | engine default (`TF_GLM53_INDEX_SPLIT=1`) | finer buckets cost ~10 GB of graphs a rank for no measurable speed |
+
+Measured with these: ~9-15 GB free on every Spark while serving (140K + DFlash2, 4 x 32K with prompt reuse, or 1M),
+never any swap.
 
 ## Node notes that cost us time
 

@@ -11,6 +11,7 @@ when a check fails. Never guess around a failure.
   fit the model.
 - GB10 memory is unified: if a node runs out of memory it swaps until it hangs. **Never start the engine on a node
   that has other GPU jobs or less than ~100 GB available**. `./one-shot.sh check` reports both.
+- Never start a new lane right after stopping one without `./one-shot.sh up` (it waits for the memory to come back).
 - Do not reboot a node to free memory; stop the other jobs and drop the page cache (`sync; sudo sysctl vm.drop_caches=3`).
 - `vm.swappiness=1` on every node (node/gb10-node-settings.sh): with the default 60 the kernel swaps the engine out
   while it loads. Swap in use before a start: `sudo swapoff -a && sudo swapon -a`.
@@ -29,7 +30,7 @@ when a check fails. Never guess around a failure.
    the live path is the ablit overlay `/mnt/spark2-models-local/GLM-5.3-EXL3-2.75-mixedK-EXL3NE-ablit`
    (`ablit/README.md`, `cluster.env`).
 3. **Image** (once, on every node; if the pull cannot resolve `ghcr.io`, the node lost its DNS servers after a
-   reboot: `sudo resolvectl dns <default-route interface> 1.1.1.1 8.8.8.8`): `docker pull ghcr.io/drowzeys/keys-tensorfold-glm53-tp4-dgx-spark:2026-10-04-opt`.
+   reboot: `sudo resolvectl dns <default-route interface> 1.1.1.1 8.8.8.8`): `docker pull ghcr.io/drowzeys/keys-tensorfold-glm53-tp4-dgx-spark:2026-10-05`.
 4. **Node settings** (after every reboot, on every node): `sudo node/gb10-node-settings.sh`.
 5. **Check**: `NODES=... MODEL=... ./one-shot.sh check` must end with `check: OK`. Fix each `FAIL`. Treat `WARN` lines
    as failures for a benchmark (other GPU jobs, low memory or compaction on all slow decode).
@@ -39,8 +40,9 @@ when a check fails. Never guess around a failure.
 6. **Start**: `./one-shot.sh up`, then **immediately** `./one-shot.sh wait` (it also drops clean page cache on the nodes
    while they load: GB10's GPU allocations can only use free memory) (about 10 minutes: weights load, then decode graphs
    are captured). If a rank exits, `wait` prints its log; report it.
-7. **Verify**: `./one-shot.sh bench` (thinking on). Expected on a healthy cluster (image `2026-10-04-opt`): prose about
-   40 tok/s, code about 38 tok/s, the ~25K-token prompt answered in about 25 s, needle PASS. More than ~15 % below
+7. **Verify**: `./one-shot.sh bench` (thinking on). Expected on a healthy cluster (image `2026-10-05`): prose about
+   40 tok/s, code about 39 tok/s, the ~25K-token prompt answered in about 25 s, needle PASS. `wait` also prints each
+   node's free memory: under 6 GB on any node means a bad start - `down`, wait a minute, `up` again. More than ~15 % below
    that means a node is the problem: rerun `check`, look for other processes, swap (`free -g`: swap must stay ~0) or
    heat (`nvidia-smi` on every node: clocks ~2.4 GHz, under ~85 °C).
 8. **Report** the endpoint to the user: `http://<rank 0>:8890/v1`, model name `glm-5.3-tf`, OpenAI-compatible.
@@ -53,8 +55,12 @@ when a check fails. Never guess around a failure.
   4.0** (non-commercial, no derivatives); tell the user before using it. Then `DRAFT=<dir> ./one-shot.sh up`, and
   requests choose with `"tf_mtp": "dflash"` (or `"auto"`).
 - **Their own fine-tuned draft**: `draft-finetune/README.md` (a further ~+10 % prose; same license as above).
-- **Concurrent streams**: `PARALLEL=4 CONTEXT=32768 ./one-shot.sh up`.
-- **1M-token context**: `CONTEXT=1000000` (decode context parallelism over the four ranks; slower prefill).
+- **Concurrent streams / agent frameworks** (Hermes, OpenClaw, ...): `PARALLEL=4 CONTEXT=32768 ./one-shot.sh up`. Prompt
+  reuse (on by default) makes repeated system prompts and histories start in under a second. Set the agent's context
+  to 64K at most and its compression to keep conversations under 32K (Hermes: `context_length: 64000`,
+  `max_tokens: 8192`, `compression.threshold: 0.4`).
+- **1M-token context**: `CONTEXT=1000000` (one stream, decode context parallelism over the four ranks; ~300-400 tok/s
+  prefill, so a cold 900K prompt takes ~50 min; follow-ups reuse it).
 - **Reproducible long prompts**: `DOCKER_ENV="-e TF_EXL3_PROMPT_DET=slots16"` (~5 % slower prefill).
 
 ## Building from source instead of the image

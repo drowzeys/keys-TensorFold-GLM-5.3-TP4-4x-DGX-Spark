@@ -1,0 +1,4 @@
+{"kind": "prose", "greedy": true, "mode": "default", "streams": 1, "aggregate_tps": 34.7, "per_stream_tps": 35.8, "ttft_max_s": 0.49, "tokens": 512}
+{"kind": "prose", "greedy": true, "mode": "default", "streams": 4, "aggregate_tps": 78.7, "per_stream_tps": 20.2, "ttft_max_s": 0.54, "tokens": 2048}
+{"kind": "code", "greedy": true, "mode": "default", "streams": 1, "aggregate_tps": 39.1, "per_stream_tps": 40.1, "ttft_max_s": 0.34, "tokens": 512}
+{"kind": "code", "greedy": true, "mode": "default", "streams": 4, "aggregate_tps": 100.2, "per_stream_tps": 26.5, "ttft_max_s": 0.64, "tokens": 2048}

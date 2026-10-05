@@ -1,0 +1,3 @@
+[tensorfold] done req-9076645278ae prompt=114944 cached=0 thinking=True tokens=59 sha=c41ae2617ee1 finish=stop tok/s=37.0 ttft=290.08s prefill=290.07s rounds=23 accepted=0/0
+[tensorfold] done req-50eb38a32937 prompt=456383 cached=0 thinking=True tokens=83 sha=1db4de9c6ad3 finish=stop tok/s=35.7 ttft=1291.64s prefill=1291.59s rounds=32 accepted=0/0
+[tensorfold] done req-b42afca1faab prompt=905182 cached=0 thinking=True tokens=103 sha=14434e7c2c1c finish=stop tok/s=33.7 ttft=2948.81s prefill=2948.71s rounds=40 accepted=0/0
