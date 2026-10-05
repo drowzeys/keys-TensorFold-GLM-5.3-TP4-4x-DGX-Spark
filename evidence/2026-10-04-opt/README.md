@@ -18,7 +18,7 @@
     thread's capture, then hung with eager loading; unresolved. It is test-only: the served engine runs one process a
     rank, and every TP4 boot and bench above (12 boots) ran this code.
 
-## Final image (rev 13a79f6), thinking on
+## Final image (rev 13a79f6 = branch glm53-tp4-opt @ fcf1f20, the same tree; commit authors rewritten), thinking on
 
 - `oneshot-bench.log`: `./one-shot.sh bench` on the published image (prose 41.8, code 38.1 tok/s; 25K prompt 25.0 s,
   needle PASS) - the README summary.
