@@ -25,9 +25,6 @@ gid_of() {  # the RoCE v2 GID of the node's fabric IPv4 (::ffff:a.b.c.d) on $HCA
     p=/sys/class/infiniband/$HCA/ports/1; for i in \$(ls \$p/gids); do [ \"\$(cat \$p/gid_attrs/types/\$i 2>/dev/null)\" = 'RoCE v2' ] &&
     grep -q \"ffff:\$h\$\" \$p/gids/\$i && { echo \$i; break; }; done"
 }
-if [ -n "${GIDS:-}" ]; then GIDS=($GIDS); else
-  GIDS=(); for n in "${NODES[@]}"; do g=$(gid_of "$n"); [ -n "$g" ] || { echo "no RoCE v2 IPv4 GID on $n ($HCA)"; exit 1; }; GIDS+=("$g"); done
-fi
 MASTER=${MASTER:-${NODES[0]}}
 CONTEXT=${CONTEXT:-36864}
 PORT=${PORT:-8890}
@@ -37,6 +34,10 @@ DOCKER_ENV=${DOCKER_ENV:-}
 NAME=tf-glm53
 
 up() {
+  # GIDs are looked up only when starting: down/logs must work even if the fabric or HCA is unavailable
+  if [ -n "${GIDS:-}" ]; then GIDS=($GIDS); else
+    GIDS=(); for n in "${NODES[@]}"; do g=$(gid_of "$n"); [ -n "$g" ] || { echo "no RoCE v2 IPv4 GID on $n ($HCA)"; exit 1; }; GIDS+=("$g"); done
+  fi
   : "${MODEL:?set MODEL to the checkpoint directory (same path on all four nodes)}"
   local mounts="-v $MODEL:$MODEL:ro" denv=""
   if [ -n "$DRAFT" ]; then mounts="$mounts -v $DRAFT:$DRAFT:ro"; denv="-e TF_GLM53_DFLASH=$DRAFT"; fi
