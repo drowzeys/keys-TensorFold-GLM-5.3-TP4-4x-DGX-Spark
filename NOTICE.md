@@ -31,6 +31,6 @@ MIT License (`LICENSE`). The engine and the image are separate works with their 
 ## Models (not in this repository)
 
 - **GLM-5.3** — Z.ai (zai-org). The quantized weights (drowzeys/keys-GLM-5.3-EXL3-2.75BPW) stay under the GLM-5.3
-  license.
+  license. The live overlay applies Blackfrost derisk tensors from drowzeys/keys-GLM-5.3-EXL3-Abliterated.
 - **DFlash2 drafter (optional)** — incoai/GLM-5.3-DFlash2, CC BY-NC-ND 4.0 (non-commercial, no derivatives). Users
   download it themselves; it is never redistributed here, and the default configuration does not use it.

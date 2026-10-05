@@ -1,0 +1,11 @@
+{
+  "parent": "/models/GLM-5.3-EXL3-2.75-mixedK-EXL3NE",
+  "donor": "drowzeys/keys-GLM-5.3-EXL3-Abliterated",
+  "method": "Blackfrost derisk o_proj + residual down_proj L2-49, re-quant EXL3 K5 mul1",
+  "layers": "2-49",
+  "anchors_untouched": "0-1 and 50-78 including MTP",
+  "routed_experts": "untouched (same as donor bake)",
+  "n_prefixes": 96,
+  "replaced_tensors": 384,
+  "missing": []
+}

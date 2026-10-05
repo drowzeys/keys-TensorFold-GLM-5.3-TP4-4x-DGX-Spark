@@ -23,7 +23,8 @@ when a check fails. Never guess around a failure.
 1. **Inputs from the user**: the four Sparks' fabric addresses, rank 0 first (`NODES`); a checkpoint path that exists
    on all four (`MODEL`, e.g. an NFS export). Ask for these if you do not have them.
 2. **Weights** (once, ~250 GB): `hf download drowzeys/keys-GLM-5.3-EXL3-2.75BPW --local-dir $MODEL` on the node that
-   exports it, or on each node.
+   exports it, or on each node. On this fleet the live path is the ablit overlay
+   `/mnt/spark2-models-local/GLM-5.3-EXL3-2.75-mixedK-EXL3NE-ablit` (`ablit/README.md`, `cluster.env`).
 3. **Image** (once, on every node; if the pull cannot resolve `ghcr.io`, the node lost its DNS servers after a
    reboot: `sudo resolvectl dns <default-route interface> 1.1.1.1 8.8.8.8`): `docker pull ghcr.io/drowzeys/keys-tensorfold-glm53-tp4-dgx-spark:2026-10-04-opt`.
 4. **Node settings** (after every reboot, on every node): `sudo node/gb10-node-settings.sh`.
