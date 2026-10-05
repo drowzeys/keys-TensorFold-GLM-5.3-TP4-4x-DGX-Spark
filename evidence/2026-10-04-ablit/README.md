@@ -4,6 +4,9 @@ Live serve: `http://10.100.10.1:8890/v1`, model `glm-5.3-tf`, image `2026-10-04-
 `MODEL=/mnt/spark2-models-local/GLM-5.3-EXL3-2.75-mixedK-EXL3NE-ablit` (hardlink overlay of the stock
 2.75 mixed-K EXL3NE tree; stock inodes of shards 00002/00003 were not rewritten).
 
+Published: [drowzeys/keys-GLM-5.3-EXL3-2.75BPW-Abliterated](https://huggingface.co/drowzeys/keys-GLM-5.3-EXL3-2.75BPW-Abliterated)
+(gated, automatic approval).
+
 Donor: [drowzeys/keys-GLM-5.3-EXL3-Abliterated](https://huggingface.co/drowzeys/keys-GLM-5.3-EXL3-Abliterated)
 (Blackfrost rank-1 derisk, α=3.0). Native F16 `self_attn.o_proj` L2–49, dense `mlp.down_proj` L2, and
 `mlp.shared_experts.down_proj` L3–49 were re-quantized to EXL3 K5 `mul1` (data-free fallback, proxy ~7–9e-4)

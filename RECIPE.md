@@ -39,7 +39,9 @@ Source: `git clone -b glm53-tp4-opt https://github.com/drowzeys/TensorFold` (Ten
 engine with the MiaAI-Lab / bertholomus levers; README's table of changes). Weights: an EXL3 GLM-5.3 checkpoint, e.g. [keys-GLM-5.3-EXL3-2.75BPW](https://huggingface.co/drowzeys/keys-GLM-5.3-EXL3-2.75BPW)
 (routed experts 2/3/4-bit per expert, mean 2.75; 5-bit non-expert layers; 8-bit MTP), at the same path on all four
 nodes (an NFS export works; each rank reads only its share through safetensors slices). The live KeySpark overlay is
-the same tree with Blackfrost derisk K5-spliced into `o_proj` / residual `down_proj` L2–49 (`ablit/README.md`).
+the same tree with Blackfrost derisk K5-spliced into `o_proj` / residual `down_proj` L2–49
+([keys-GLM-5.3-EXL3-2.75BPW-Abliterated](https://huggingface.co/drowzeys/keys-GLM-5.3-EXL3-2.75BPW-Abliterated),
+`ablit/README.md`).
 
 ```sh
 export NODES="spark1 spark2 spark3 spark4"   # fabric addresses, rank 0 first (serves HTTP)

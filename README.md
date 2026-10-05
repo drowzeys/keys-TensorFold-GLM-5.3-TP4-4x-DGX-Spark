@@ -5,6 +5,10 @@ across **four NVIDIA DGX Sparks** (GB10, one rank per Spark over ConnectX-7 RoCE
 Image `ghcr.io/drowzeys/keys-tensorfold-glm53-tp4-dgx-spark:2026-10-04-opt`. **The default needs no extra draft model**
 (GLM-5.3's own MTP layer drafts); DFlash2 is an optional add-on.
 
+**Abliterated weights:** [drowzeys/keys-GLM-5.3-EXL3-2.75BPW-Abliterated](https://huggingface.co/drowzeys/keys-GLM-5.3-EXL3-2.75BPW-Abliterated)
+(gated, automatic approval after the Responsible Use form). Stock parent:
+[drowzeys/keys-GLM-5.3-EXL3-2.75BPW](https://huggingface.co/drowzeys/keys-GLM-5.3-EXL3-2.75BPW). Method: [ablit/](ablit/).
+
 ## Performance (image `2026-10-04-opt`, thinking on)
 
 Four DGX Sparks, the published image through `one-shot.sh`, default settings, **thinking on** (GLM-5.3 is a reasoning
@@ -96,7 +100,8 @@ measured cleanly and a resend fix is validated).
 sudo node/gb10-node-settings.sh
 # from any machine that can ssh to the four Sparks
 export NODES="spark1 spark2 spark3 spark4" MODEL=/models/GLM-5.3-EXL3-2.75BPW
-# KeySpark live overlay (abliterated): source cluster.env
+# abliterated: hf download drowzeys/keys-GLM-5.3-EXL3-2.75BPW-Abliterated --local-dir $MODEL
+# KeySpark live overlay: source cluster.env
 ./one-shot.sh check && ./one-shot.sh up && ./one-shot.sh wait && ./one-shot.sh bench
 curl http://spark1:8890/v1/chat/completions -H 'Content-Type: application/json' \
   -d '{"model": "glm-5.3-tf", "messages": [{"role": "user", "content": "Hello"}]}'
@@ -112,9 +117,10 @@ curl http://spark1:8890/v1/chat/completions -H 'Content-Type: application/json' 
 - Code: TensorFold fork branch [`drowzeys/TensorFold:glm53-tp4-opt`](https://github.com/drowzeys/TensorFold/tree/glm53-tp4-opt)
   ([PR #159](https://github.com/ashhart/TensorFold/pull/159) carries the base engine). Weights:
   [drowzeys/keys-GLM-5.3-EXL3-2.75BPW](https://huggingface.co/drowzeys/keys-GLM-5.3-EXL3-2.75BPW) (KL 0.124 nats /
-  top-1 89.6 % vs BF16). Live KeySpark serve is the [ablit overlay](ablit/README.md) of that checkpoint
+  top-1 89.6 % vs BF16). Abliterated pack:
+  [drowzeys/keys-GLM-5.3-EXL3-2.75BPW-Abliterated](https://huggingface.co/drowzeys/keys-GLM-5.3-EXL3-2.75BPW-Abliterated)
   (Blackfrost derisk from [keys-GLM-5.3-EXL3-Abliterated](https://huggingface.co/drowzeys/keys-GLM-5.3-EXL3-Abliterated)
-  re-quantized to K5; gate **31/32** refusal, **22/22** cyber, thinking off). From source: [RECIPE.md](RECIPE.md).
+  re-quantized to K5; gate **31/32** refusal, **22/22** cyber, thinking off; [ablit/](ablit/)). From source: [RECIPE.md](RECIPE.md).
 
 ## Reproducibility
 
@@ -143,7 +149,9 @@ builds your own for non-commercial use.
 
 - [AGENTS.md](AGENTS.md) — step-by-step for coding agents (and humans).
 - [one-shot.sh](one-shot.sh) — `check`, `up`, `wait`, `bench`, `down`, `logs` for the prebuilt image.
-- [ablit/](ablit/) — Blackfrost derisk overlay of the 2.75 bpw checkpoint; [cluster.env](cluster.env) — this fleet's `NODES`/`MODEL`.
+- [ablit/](ablit/) — Blackfrost derisk overlay of the 2.75 bpw checkpoint
+  ([keys-GLM-5.3-EXL3-2.75BPW-Abliterated](https://huggingface.co/drowzeys/keys-GLM-5.3-EXL3-2.75BPW-Abliterated));
+  [cluster.env](cluster.env) — this fleet's `NODES`/`MODEL`.
 - [RECIPE.md](RECIPE.md) — from source; [node/](node/) — node settings; [draft-finetune/](draft-finetune/) — own draft.
 - [bench/](bench/) — every bench behind these tables; [evidence/](evidence/) — logs and raw results by date.
 
