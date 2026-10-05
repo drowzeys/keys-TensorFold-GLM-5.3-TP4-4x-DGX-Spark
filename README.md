@@ -16,6 +16,7 @@ model: we measure it the way it is meant to be used, and publish no thinking-off
 | **Code** (same) | **38.1 tok/s** |
 | **25K-token prompt** (prefill + answer, needle found) | **25.0 s** |
 | **Prefill** at 128K tokens | **1,038 tok/s** (TTFT 125 s) |
+| **4 streams, aggregate** (greedy, DFlash2): prose / code | **123.7 / 168.6 tok/s** (MTP: 118.5 / 134.0) |
 
 | Single stream, thinking on | MTP = 2 (default, no extra model) | DFlash2 (optional draft) |
 |---|---|---|
@@ -24,8 +25,19 @@ model: we measure it the way it is meant to be used, and publish no thinking-off
 | Prefill 128K | 1,038 tok/s, TTFT 125 s | same |
 
 The detailed rows use `bench/tfbench.py` (3 prose + 2 code prompts, 512 tokens; the 32K rows put ~32K tokens of
-background text before each request). **4 concurrent streams:** being re-measured on this image with thinking on;
-this table is updated when that run finishes.
+background text before each request).
+
+| Concurrent streams, greedy (aggregate tok/s) | MTP = 2 | DFlash2 |
+|---|---|---|
+| **Prose, 1 stream** | 38.3 | **44.5** |
+| **Prose, 4 streams** | **118.5** | **123.7** |
+| **Code, 1 stream** | 44.2 | **67.2** |
+| **Code, 4 streams** | **134.0** | **168.6** |
+| Sampled (T = 1.0), 4 streams: prose / code | 69.3 / 71.0 | 75.5 / 63.6 |
+
+`PARALLEL=4 CONTEXT=32768`, `tools/bench_concurrent.py --alone` (256-token replies; every concurrent reply checked equal
+to the same request alone: 126 / 126; TTFT ≤ 0.93 s). Measured 2026-10-04 on this engine before its final memory
+fixes; the prose prompts ran with thinking on, the code rows are raw code completions.
 
 Memory: GPU memory on GB10 is unified. With the node settings (`vm.swappiness=1`) and `one-shot.sh` (page cache
 dropped at start and while loading), each Spark keeps ~9-15 GB free while serving a 140K window with DFlash2 loaded,
@@ -133,22 +145,35 @@ builds your own for non-commercial use.
 
 ## Credits
 
-- **[Z.ai](https://huggingface.co/zai-org)** — GLM-5.3 (weights under its license).
-- **[Ash Hart / TensorFold](https://github.com/ashhart/TensorFold)** and its contributors — the engine (Apache-2.0
-  from 0.6.0; earlier code MIT), its EXL3 kernels, the `glm5_next` family this engine builds on.
-- **[MiaAI-Lab](https://github.com/MiaAI-Lab/GLM-5.3-Flash-EXL3-2x-DGX-Sparks-TensorFold)** (Apache-2.0) — the GLM
-  prompt-kernel designs, and the decode, sampling, stop, rail, rank-check and prompt-reuse patches listed above (the
-  L2 prefetch kernel is used unchanged).
+This recipe stands on other people's work. Thank you to:
+
+- **[Z.ai](https://huggingface.co/zai-org)** — GLM-5.3, its weights and its MTP layer (weights under the GLM-5.3 license).
+- **[Ash Hart / TensorFold](https://github.com/ashhart/TensorFold)** — the engine (Apache-2.0 from 0.6.0; earlier code
+  MIT): the CUDA server, the EXL3 decode and expert kernels, the `glm5_next` family this engine builds on, exact
+  drafted decoding. And the TensorFold contributors, among them nood-co1, vcruz305, MiaAI-Lab, philip-pentatonic,
+  tournierjc, mikolaj92, jschmied, shantanugoel, plotarmordev, cshintov, akol1, chadhurley25075-png, di37, gilby,
+  gprot42, EugeneClaw, Chedrian07, eleqtrizit, jayleaton, kky42, feni6, taussoe, MovieMaker93 and mgoldwasser.
+- **[MiaAI-Lab / Mia's AI Lab](https://github.com/MiaAI-Lab/GLM-5.3-Flash-EXL3-2x-DGX-Sparks-TensorFold)** (Apache-2.0)
+  — the GLM prompt-kernel designs our prompt experts adapt, and the patches behind most of this image's levers: 16-byte
+  trellis loads (0047), fused expert epilogues (0016), L2 prefetch (0046, its kernel used unchanged), the FP8 head
+  (0002), the late token stream and pinned candidates (0013), the nucleus union (0034), the stop vote (0070), rank
+  checks (0065), the dual-rail setup, the visible-key idea (0043) and the prompt-reuse designs (0008 / 0015 / 0042 /
+  0063). Their [full GLM-5.3 3-Spark recipe](https://github.com/MiaAI-Lab/GLM-5.3-EXL3-3x-DGX-Sparks-TensorFold) is
+  where we found the DSpark drafter and the NVMe prompt cache.
 - **[Jay Leaton / glm53-tensorfold-spark](https://github.com/jayleaton/glm53-tensorfold-spark)** (Apache-2.0) — the
-  L2 prefetch and 16-byte trellis-load work MiaAI-Lab's 0046 / 0047 adapt.
+  L2 prefetch (patch 0460) and 16-byte trellis loads (patch 0580) that MiaAI-Lab's 0046 / 0047 adapt.
 - **[BertholomusAI (Albert Lee)](https://github.com/bertholomus/glm-5.3-tensorfold-tp4-4xgb10)** (Apache-2.0) — the
-  decode side stream, MTP index reuse, the draft cut and warm-up graph capture for concurrent streams (ideas
-  re-implemented here), and the head-to-head prompts.
-- **[turboderp / ExLlamaV3](https://github.com/turboderp-org/exllamav3)** (MIT) — EXL3; **vcruz305** — per-expert
-  mixed-width EXL3 work the quantization builds on; **cuda-exl3** — the grouped prompt GEMM.
-- **[b12x](https://github.com/local-inference-lab/b12x)** (Apache-2.0) — the RoCE one-shot all-reduce.
+  decode side stream, MTP index reuse, the draft-depth policy, the draft cut and warm-up graph capture for concurrent
+  streams, quick fills (ideas re-implemented here), and the four head-to-head prompts.
+- **[turboderp / ExLlamaV3](https://github.com/turboderp-org/exllamav3)** (MIT) — the EXL3 format and converter.
+- **vcruz305** — the per-expert mixed-width EXL3 work this checkpoint's quantization builds on.
+- **cuda-exl3** — the stacked expert layout and grouped GEMM behind the prompt path.
+- **[b12x / local-inference-lab](https://github.com/local-inference-lab/b12x)** (Apache-2.0) — the RoCE one-shot
+  all-reduce and all-gather.
 - **[incoai](https://huggingface.co/incoai)** — the optional DFlash2 draft (CC BY-NC-ND 4.0; never redistributed here).
-- **NVIDIA** — the PyTorch container and NCCL.
+- **NVIDIA** — DGX Spark, the PyTorch container, CUDA and NCCL.
+- **[Anthropic's Claude](https://claude.com/claude-code)** (Claude Code) — engineering assistance: ports, tests,
+  benchmarks and documentation, as the commits' co-author lines record.
 
 Full notices: [NOTICE.md](NOTICE.md) and TensorFold's `THIRD_PARTY_NOTICES.md`. Scripts here: MIT (see LICENSE).
 Model weights: the GLM-5.3 license of the base model.

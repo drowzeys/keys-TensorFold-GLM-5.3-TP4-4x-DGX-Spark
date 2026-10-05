@@ -21,6 +21,8 @@ MIT License (`LICENSE`). The engine and the image are separate works with their 
   https://github.com/bertholomus/glm-5.3-tensorfold-tp4-4xgb10 — Copyright 2026 Albert Lee, Apache License 2.0. Ideas
   re-implemented (no code copied): decode side stream, MTP index reuse, draft depth policy, draft cut for concurrent
   rounds, warm-up graph capture, quick fills. `bench/h2h.py` uses the four prompts of its `bench/tf_greedy.py`.
+- **cuda-exl3** — the stacked expert layout and grouped prompt GEMM (a library in the image).
+- **Anthropic's Claude (Claude Code)** — engineering assistance, recorded in the commits' co-author lines.
 - **b12x** — https://github.com/local-inference-lab/b12x — the b12x contributors, Apache License 2.0 (RoCE one-shot
   collectives, a library in the image).
 - **ExLlamaV3** — https://github.com/turboderp-org/exllamav3 — Copyright (c) 2025 Turboderp, MIT (the EXL3 format).
