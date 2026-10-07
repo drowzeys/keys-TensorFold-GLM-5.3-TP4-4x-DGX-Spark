@@ -1,0 +1,34 @@
+warmup: 47.90 tok/s, ttft 0.8s
+prose_beekeeper     38.65 tok/s  tok/round 2.094  pass 54.2 ms  ttft 0.0s
+prose_lighthouse    36.07 tok/s  tok/round 1.928  pass 53.5 ms  ttft 0.3s
+prose_nurse         37.26 tok/s  tok/round 1.914  pass 51.4 ms  ttft 0.3s
+code_cache          44.48 tok/s  tok/round 2.517  pass 56.6 ms  ttft 0.3s
+code_parser         46.27 tok/s  tok/round 2.704  pass 58.4 ms  ttft 0.3s
+prose_beekeeper     40.96 tok/s  tok/round 2.094  pass 51.1 ms  ttft 0.0s
+prose_lighthouse    37.96 tok/s  tok/round 1.928  pass 50.8 ms  ttft 0.0s
+prose_nurse         38.31 tok/s  tok/round 1.914  pass 50.0 ms  ttft 0.0s
+code_cache          45.36 tok/s  tok/round 2.517  pass 55.5 ms  ttft 0.0s
+code_parser         46.89 tok/s  tok/round 2.704  pass 57.7 ms  ttft 0.0s
+A-dsp-short              prose  n=6 tps 38.13 tok/round 1.93 pass 51.2 ms
+A-dsp-short              code   n=4 tps 45.81 tok/round 2.61 pass 57.1 ms
+warmup: 49.08 tok/s, ttft 26.7s
+prose_beekeeper     34.69 tok/s  tok/round 1.996  pass 57.5 ms  ttft 0.1s
+prose_lighthouse    33.51 tok/s  tok/round 1.907  pass 56.9 ms  ttft 26.8s
+prose_nurse         33.77 tok/s  tok/round 1.958  pass 58.0 ms  ttft 26.8s
+code_cache          38.83 tok/s  tok/round 2.333  pass 60.1 ms  ttft 26.9s
+code_parser         37.95 tok/s  tok/round 2.445  pass 64.4 ms  ttft 26.9s
+prose_beekeeper     34.40 tok/s  tok/round 1.996  pass 58.0 ms  ttft 26.9s
+prose_lighthouse    33.20 tok/s  tok/round 1.872  pass 56.4 ms  ttft 27.0s
+prose_nurse         33.01 tok/s  tok/round 1.865  pass 56.5 ms  ttft 27.0s
+code_cache          38.56 tok/s  tok/round 2.366  pass 61.3 ms  ttft 27.0s
+code_parser         40.57 tok/s  tok/round 2.594  pass 63.9 ms  ttft 26.9s
+A-dsp-32k                prose  n=6 tps 33.64 tok/round 1.93 pass 57.2 ms
+A-dsp-32k                code   n=4 tps 38.70 tok/round 2.41 pass 62.6 ms
+warmup: 63.49 tok/s, ttft 110.7s
+prose_beekeeper     33.54 tok/s  tok/round 2.077  pass 61.9 ms  ttft 0.2s
+prose_lighthouse    30.13 tok/s  tok/round 1.819  pass 60.4 ms  ttft 110.2s
+code_parser         37.44 tok/s  tok/round 2.493  pass 66.6 ms  ttft 110.3s
+A-dsp-120k               prose  n=2 tps 31.84 tok/round 1.95 pass 61.1 ms
+A-dsp-120k               code   n=1 tps 37.44 tok/round 2.49 pass 66.6 ms
+A-dsp              prompt   32534 tok  TTFT   26.69 s  prefill    1219 tok/s  decode@depth  24.6 tok/s  (runs 1)
+A-dsp              prompt  130205 tok  TTFT  119.18 s  prefill    1093 tok/s  decode@depth  22.6 tok/s  (runs 1)

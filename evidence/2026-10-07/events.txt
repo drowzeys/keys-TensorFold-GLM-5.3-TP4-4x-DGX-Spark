@@ -1,0 +1,18 @@
+12:01 S: live server down again (Hermes offline ~50 min): publishable drafter test - stock DSpark vs ft2, no MTP
+12:17 S: dsp-stock (--mtp-drafts 0): prose short 35.17 2.086 | prose 32K 32.28 2.070 | code 32K 36.91 2.542 (tok/s tok/round) | vs ft8 33.98 / MTP 32.6 / DFlash2-base code 40.58 -> fail
+12:33 S: dsp-ft2 (--mtp-drafts 0): prose short 35.00 2.109 | prose 32K 32.64 2.118 | code 32K 34.35 2.393 (tok/s tok/round) | vs ft8 33.98 / MTP 32.6 / DFlash2-base code 40.58 -> fail
+12:33 S: DONE - live MTP-only 1M server being restored for Hermes (default unchanged)
+13:50 P: live server down (Hermes offline ~50 min; longer if a setting passes): DSpark-ft2 alone, live policy/depth sweep vs ft8
+14:41 P: sweep (ft2 DSpark alone; prose 32K tok/s tok/round, code 32K tok/s, go): cost 31.76 2.109 c34.74 fail; fix2 31.54 1.874 c36.40 fail; fix3 30.84 2.038 c35.56 fail; fix4 28.90 2.106 c35.79 fail; conf03 33.64 1.887 c39.20 fail; conf05 32.72 1.774 c38.82 fail; conf07 32.11 1.715 c36.10 fail; | ft8 ref 34.2 / code 42.9
+14:42 P: no setting beat ft8 - DSpark parked (publishable recipe stays MTP-only)
+14:42 P: DONE - live MTP-only 1M server being restored for Hermes (default unchanged)
+14:56 A: live server down (Hermes offline ~75-90 min): option A - MTP-only vs DSpark-ft2 conf 0.3, same session, full bench
+15:25 A: mtp: prose 36.79/32.22/29.18 code 39.90/34.83/31.46 (short/32K/120K) | pp 32536=1185 130205=1045  | needle [True]
+15:53 A: dsp: prose 38.20/33.76/31.84 code 45.75/38.98/37.44 (short/32K/120K) | pp 32534=1219 130205=1093  | needle [True]
+15:53 A: go rule (32K): DSpark prose 33.76 vs MTP 32.22 (need x1.03), code 38.98 vs 34.83 (need x1.05) -> PASS - 1M check next
+16:41 A: 1M DSpark-ft2: needle@830K [(True, 2351)] s | min avail 13 GB
+16:41 A: DONE - live MTP-only 1M server being restored for Hermes (default unchanged)
+17:39 V2: DSpark image A/B (Hermes stays offline): 10-05 + mounted DSpark source vs image 10-07
+17:51 V2: X-1005mount: prose: 33.30 tok/s 1.94/round 58.7 ms code: 37.86 tok/s 2.35/round 62.1 ms 
+18:03 V2: Y-1007: prose: 32.68 tok/s 1.94/round 59.4 ms code: 38.64 tok/s 2.41/round 62.1 ms 
+18:03 V2: A/B done - cluster still held for the Zig session

@@ -1,0 +1,84 @@
+warmup: 39.00 tok/s, ttft 26.5s
+prose_beekeeper     28.22 tok/s  tok/round 1.943  pass 68.8 ms  ttft 0.0s
+prose_lighthouse    31.53 tok/s  tok/round 2.12  pass 67.3 ms  ttft 26.8s
+prose_nurse         32.39 tok/s  tok/round 2.112  pass 65.2 ms  ttft 26.8s
+prose_beekeeper     32.14 tok/s  tok/round 2.129  pass 66.3 ms  ttft 26.8s
+prose_lighthouse    33.73 tok/s  tok/round 2.212  pass 65.6 ms  ttft 26.9s
+prose_nurse         32.55 tok/s  tok/round 2.138  pass 65.7 ms  ttft 27.0s
+P-cost-p32               prose  n=6 tps 32.26 tok/round 2.12 pass 66.0 ms
+warmup: 46.61 tok/s, ttft 27.0s
+code_parser         34.46 tok/s  tok/round 2.469  pass 71.6 ms  ttft 27.4s
+code_cache          35.02 tok/s  tok/round 2.445  pass 69.8 ms  ttft 27.1s
+P-cost-c32               code   n=2 tps 34.74 tok/round 2.46 pass 70.7 ms
+warmup: 40.55 tok/s, ttft 27.1s
+prose_beekeeper     33.16 tok/s  tok/round 1.981  pass 59.7 ms  ttft 0.0s
+prose_lighthouse    30.55 tok/s  tok/round 1.812  pass 59.3 ms  ttft 26.9s
+prose_nurse         31.72 tok/s  tok/round 1.879  pass 59.2 ms  ttft 26.9s
+prose_beekeeper     32.96 tok/s  tok/round 1.958  pass 59.4 ms  ttft 26.9s
+prose_lighthouse    30.45 tok/s  tok/round 1.806  pass 59.3 ms  ttft 27.0s
+prose_nurse         30.40 tok/s  tok/round 1.806  pass 59.4 ms  ttft 26.8s
+P-fix2-p32               prose  n=6 tps 31.13 tok/round 1.85 pass 59.4 ms
+warmup: 39.00 tok/s, ttft 27.0s
+code_parser         36.82 tok/s  tok/round 2.193  pass 59.6 ms  ttft 27.4s
+code_cache          35.99 tok/s  tok/round 2.138  pass 59.4 ms  ttft 27.1s
+P-fix2-c32               code   n=2 tps 36.40 tok/round 2.17 pass 59.5 ms
+warmup: 42.48 tok/s, ttft 26.8s
+prose_beekeeper     31.43 tok/s  tok/round 2.069  pass 65.8 ms  ttft 0.0s
+prose_lighthouse    31.67 tok/s  tok/round 2.094  pass 66.1 ms  ttft 27.0s
+prose_nurse         30.53 tok/s  tok/round 2.02  pass 66.2 ms  ttft 26.9s
+prose_beekeeper     30.79 tok/s  tok/round 2.044  pass 66.4 ms  ttft 27.1s
+prose_lighthouse    30.12 tok/s  tok/round 1.988  pass 66.0 ms  ttft 27.0s
+prose_nurse         30.50 tok/s  tok/round 2.012  pass 66.0 ms  ttft 27.0s
+P-fix3-p32               prose  n=6 tps 30.66 tok/round 2.03 pass 66.1 ms
+warmup: 50.55 tok/s, ttft 27.0s
+code_parser         34.77 tok/s  tok/round 2.333  pass 67.1 ms  ttft 27.2s
+code_cache          36.34 tok/s  tok/round 2.422  pass 66.6 ms  ttft 27.0s
+P-fix3-c32               code   n=2 tps 35.56 tok/round 2.38 pass 66.9 ms
+warmup: 39.93 tok/s, ttft 27.1s
+prose_beekeeper     28.76 tok/s  tok/round 2.094  pass 72.8 ms  ttft 0.0s
+prose_lighthouse    29.95 tok/s  tok/round 2.174  pass 72.6 ms  ttft 26.9s
+prose_nurse         28.08 tok/s  tok/round 2.028  pass 72.2 ms  ttft 26.9s
+prose_beekeeper     31.35 tok/s  tok/round 2.281  pass 72.8 ms  ttft 26.9s
+prose_lighthouse    27.21 tok/s  tok/round 1.973  pass 72.5 ms  ttft 27.1s
+prose_nurse         28.08 tok/s  tok/round 2.086  pass 74.3 ms  ttft 27.0s
+P-fix4-p32               prose  n=6 tps 28.42 tok/round 2.09 pass 72.7 ms
+warmup: 40.18 tok/s, ttft 27.5s
+code_parser         37.09 tok/s  tok/round 2.747  pass 74.1 ms  ttft 27.3s
+code_cache          34.49 tok/s  tok/round 2.542  pass 73.7 ms  ttft 27.1s
+P-fix4-c32               code   n=2 tps 35.79 tok/round 2.64 pass 73.9 ms
+warmup: 62.47 tok/s, ttft 26.8s
+prose_beekeeper     33.12 tok/s  tok/round 1.845  pass 55.7 ms  ttft 0.1s
+prose_lighthouse    32.94 tok/s  tok/round 1.832  pass 55.6 ms  ttft 26.9s
+prose_nurse         31.57 tok/s  tok/round 1.732  pass 54.9 ms  ttft 26.9s
+prose_beekeeper     37.03 tok/s  tok/round 2.156  pass 58.2 ms  ttft 27.0s
+prose_lighthouse    34.27 tok/s  tok/round 1.914  pass 55.8 ms  ttft 27.0s
+prose_nurse         32.92 tok/s  tok/round 1.845  pass 56.0 ms  ttft 27.1s
+P-conf03-p32             prose  n=6 tps 33.03 tok/round 1.84 pass 55.8 ms
+warmup: 51.31 tok/s, ttft 27.0s
+code_parser         38.20 tok/s  tok/round 2.399  pass 62.8 ms  ttft 27.1s
+code_cache          40.21 tok/s  tok/round 2.493  pass 62.0 ms  ttft 27.0s
+P-conf03-c32             code   n=2 tps 39.20 tok/round 2.45 pass 62.4 ms
+warmup: 47.32 tok/s, ttft 26.9s
+prose_beekeeper     33.56 tok/s  tok/round 1.845  pass 55.0 ms  ttft 0.0s
+prose_lighthouse    32.41 tok/s  tok/round 1.744  pass 53.8 ms  ttft 27.1s
+prose_nurse         33.72 tok/s  tok/round 1.838  pass 54.5 ms  ttft 27.0s
+prose_beekeeper     33.60 tok/s  tok/round 1.825  pass 54.3 ms  ttft 26.9s
+prose_lighthouse    31.23 tok/s  tok/round 1.686  pass 54.0 ms  ttft 26.9s
+prose_nurse         31.81 tok/s  tok/round 1.703  pass 53.5 ms  ttft 27.0s
+P-conf05-p32             prose  n=6 tps 32.99 tok/round 1.78 pass 54.2 ms
+warmup: 52.50 tok/s, ttft 27.1s
+code_parser         39.02 tok/s  tok/round 2.291  pass 58.7 ms  ttft 27.2s
+code_cache          38.61 tok/s  tok/round 2.212  pass 57.3 ms  ttft 27.0s
+P-conf05-c32             code   n=2 tps 38.82 tok/round 2.25 pass 58.0 ms
+warmup: 50.20 tok/s, ttft 26.9s
+prose_beekeeper     32.23 tok/s  tok/round 1.721  pass 53.4 ms  ttft 0.1s
+prose_lighthouse    30.88 tok/s  tok/round 1.643  pass 53.2 ms  ttft 26.9s
+prose_nurse         33.35 tok/s  tok/round 1.799  pass 54.0 ms  ttft 27.0s
+prose_beekeeper     32.45 tok/s  tok/round 1.721  pass 53.0 ms  ttft 26.9s
+prose_lighthouse    31.12 tok/s  tok/round 1.664  pass 53.5 ms  ttft 27.1s
+prose_nurse         32.67 tok/s  tok/round 1.744  pass 53.4 ms  ttft 27.0s
+P-conf07-p32             prose  n=6 tps 32.34 tok/round 1.72 pass 53.4 ms
+warmup: 52.67 tok/s, ttft 27.0s
+code_parser         37.32 tok/s  tok/round 2.077  pass 55.7 ms  ttft 27.4s
+code_cache          34.88 tok/s  tok/round 1.9  pass 54.5 ms  ttft 27.2s
+P-conf07-c32             code   n=2 tps 36.10 tok/round 1.99 pass 55.1 ms

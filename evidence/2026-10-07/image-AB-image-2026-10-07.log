@@ -1,0 +1,16 @@
+warmup: 49.59 tok/s, ttft 0.8s
+prose_beekeeper     39.09 tok/s  tok/round 2.309  pass 59.1 ms  ttft 0.0s
+V2-Y-1007-warm           prose  n=1 tps 39.09 tok/round 2.31 pass 59.1 ms
+10.100.10.1 load 2.80 3.48 3.23 1/1051 1309727
+10.100.10.2 load 2.06 4.20 4.19 3/1016 3434542
+10.100.10.3 load 2.95 4.51 3.89 3/1058 2482069
+10.100.10.5 load 1.72 3.23 3.31 3/1038 3000433
+warmup: 51.16 tok/s, ttft 26.5s
+prose_beekeeper     33.61 tok/s  tok/round 1.996  pass 59.4 ms  ttft 0.1s
+prose_lighthouse    32.68 tok/s  tok/round 1.943  pass 59.5 ms  ttft 26.8s
+prose_nurse         32.67 tok/s  tok/round 1.851  pass 56.7 ms  ttft 26.8s
+V2-Y-1007-p32            prose  n=3 tps 32.68 tok/round 1.94 pass 59.4 ms
+warmup: 55.56 tok/s, ttft 26.8s
+code_parser         40.67 tok/s  tok/round 2.607  pass 64.1 ms  ttft 26.9s
+code_cache          36.61 tok/s  tok/round 2.203  pass 60.2 ms  ttft 27.0s
+V2-Y-1007-c32            code   n=2 tps 38.64 tok/round 2.41 pass 62.1 ms

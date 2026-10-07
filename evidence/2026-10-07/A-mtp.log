@@ -1,0 +1,34 @@
+warmup: 43.35 tok/s, ttft 0.8s
+prose_beekeeper     35.67 tok/s  tok/round 1.943  pass 54.5 ms  ttft 0.0s
+prose_lighthouse    36.89 tok/s  tok/round 1.996  pass 54.1 ms  ttft 0.3s
+prose_nurse         37.43 tok/s  tok/round 2.028  pass 54.2 ms  ttft 0.3s
+code_cache          38.68 tok/s  tok/round 2.103  pass 54.4 ms  ttft 0.3s
+code_parser         41.12 tok/s  tok/round 2.241  pass 54.5 ms  ttft 0.3s
+prose_beekeeper     36.06 tok/s  tok/round 1.943  pass 53.9 ms  ttft 0.0s
+prose_lighthouse    37.12 tok/s  tok/round 1.996  pass 53.8 ms  ttft 0.0s
+prose_nurse         37.57 tok/s  tok/round 2.028  pass 54.0 ms  ttft 0.0s
+code_cache          38.56 tok/s  tok/round 2.103  pass 54.5 ms  ttft 0.0s
+code_parser         41.26 tok/s  tok/round 2.241  pass 54.3 ms  ttft 0.0s
+A-mtp-short              prose  n=6 tps 37.01 tok/round 2.00 pass 54.0 ms
+A-mtp-short              code   n=4 tps 39.90 tok/round 2.17 pass 54.4 ms
+warmup: 36.29 tok/s, ttft 29.2s
+prose_beekeeper     31.26 tok/s  tok/round 1.893  pass 60.5 ms  ttft 0.1s
+prose_lighthouse    32.26 tok/s  tok/round 1.95  pass 60.5 ms  ttft 27.9s
+prose_nurse         32.53 tok/s  tok/round 1.958  pass 60.2 ms  ttft 27.6s
+code_cache          33.97 tok/s  tok/round 2.06  pass 60.7 ms  ttft 27.7s
+code_parser         35.09 tok/s  tok/round 2.138  pass 60.9 ms  ttft 27.7s
+prose_beekeeper     32.25 tok/s  tok/round 1.95  pass 60.5 ms  ttft 27.6s
+prose_lighthouse    31.18 tok/s  tok/round 1.879  pass 60.2 ms  ttft 27.7s
+prose_nurse         33.86 tok/s  tok/round 2.036  pass 60.1 ms  ttft 27.6s
+code_cache          33.77 tok/s  tok/round 2.044  pass 60.5 ms  ttft 27.8s
+code_parser         36.46 tok/s  tok/round 2.212  pass 60.7 ms  ttft 27.5s
+A-mtp-32k                prose  n=6 tps 32.25 tok/round 1.95 pass 60.4 ms
+A-mtp-32k                code   n=4 tps 34.53 tok/round 2.10 pass 60.7 ms
+warmup: 34.70 tok/s, ttft 114.8s
+prose_beekeeper     30.14 tok/s  tok/round 1.914  pass 63.5 ms  ttft 0.2s
+prose_lighthouse    28.23 tok/s  tok/round 1.799  pass 63.7 ms  ttft 114.0s
+code_parser         31.46 tok/s  tok/round 2.028  pass 64.5 ms  ttft 114.1s
+A-mtp-120k               prose  n=2 tps 29.18 tok/round 1.86 pass 63.6 ms
+A-mtp-120k               code   n=1 tps 31.46 tok/round 2.03 pass 64.5 ms
+A-mtp              prompt   32536 tok  TTFT   27.46 s  prefill    1185 tok/s  decode@depth  41.6 tok/s  (runs 1)
+A-mtp              prompt  130205 tok  TTFT  124.65 s  prefill    1045 tok/s  decode@depth  38.7 tok/s  (runs 1)

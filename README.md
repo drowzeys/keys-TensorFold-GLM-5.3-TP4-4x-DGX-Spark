@@ -2,8 +2,11 @@
 
 The full **GLM-5.3** (753B total, ~40B active) served natively by [TensorFold](https://github.com/ashhart/TensorFold)
 across **four NVIDIA DGX Sparks** (GB10, one rank per Spark over ConnectX-7 RoCE). No vLLM in the serving path.
-Image `ghcr.io/drowzeys/keys-tensorfold-glm53-tp4-dgx-spark:2026-10-05` (= `latest`). **The default needs no extra draft model**
-(GLM-5.3's own MTP layer drafts); DFlash2 is an optional add-on.
+Image `ghcr.io/drowzeys/keys-tensorfold-glm53-tp4-dgx-spark:2026-10-07` (= `latest`). **The default needs no extra draft model**
+(GLM-5.3's own MTP layer drafts). **New 2026-10-07:** an openly licensed DSpark drafter,
+[drowzeys/keys-GLM-5.3-speculator.dspark-ft2](https://huggingface.co/drowzeys/keys-GLM-5.3-speculator.dspark-ft2)
+(GLM-5.3 license), **+5 % prose / +12 % code** over MTP at 32K with thinking on ([below](#dspark-drafter-2026-10-07)).
+DFlash2 remains an optional add-on.
 
 **Abliterated weights:** [drowzeys/keys-GLM-5.3-EXL3-2.75BPW-Abliterated](https://huggingface.co/drowzeys/keys-GLM-5.3-EXL3-2.75BPW-Abliterated)
 (gated, automatic approval after the Responsible Use form). Stock parent:
@@ -32,6 +35,32 @@ model: we measure it the way it is meant to be used, and publish no thinking-off
 
 The detailed rows use `bench/tfbench.py` (3 prose + 2 code prompts, 512 tokens; the 32K rows put ~32K tokens of
 background text before each request).
+
+### DSpark drafter (2026-10-07)
+
+[drowzeys/keys-GLM-5.3-speculator.dspark-ft2](https://huggingface.co/drowzeys/keys-GLM-5.3-speculator.dspark-ft2) is
+[RedHatAI/GLM-5.3-speculator.dspark](https://huggingface.co/RedHatAI/GLM-5.3-speculator.dspark) fine-tuned on 800
+thinking-on captures of the Abliterated target (held-out acceptance 3.712 -> 3.770). It is under the GLM-5.3 license
+(MIT-style; keep the notice), so unlike DFlash2 it can be redistributed. It drafts **alone** (`--mtp-drafts 0`: the MTP
+layer is not loaded) with the **confidence** stop policy at 0.3 - the default cost policy, calibrated at context 0,
+drafts too deep at long context.
+
+```sh
+hf download drowzeys/keys-GLM-5.3-speculator.dspark-ft2 --local-dir /models/keys-GLM-5.3-speculator.dspark-ft2   # every node
+DSPARK=/models/keys-GLM-5.3-speculator.dspark-ft2 ./one-shot.sh up && ./one-shot.sh wait
+```
+
+Measured in one session (image + source of `2026-10-07`, Abliterated weights, thinking on, T = 1.0, `bench/tfbench.py`):
+
+| tok/s | MTP = 2 (default) | **DSpark ft2** |
+|---|---|---|
+| prose short / 32K / ~120K | 36.8 / 32.2 / 29.2 | **38.2 / 33.8 / 31.8** |
+| code short / 32K / ~120K | 39.9 / 34.8 / 31.5 | **45.8 / 39.0 / 37.4** |
+| prefill 32K / 128K | 1,185 / 1,045 | **1,219 / 1,093** |
+| needle 120K / 1M boot, needle in an 830K-token prompt | found / found | found / **found** (prefill 2,351 s) |
+
+One stream only (`PARALLEL=1`); for concurrent streams keep MTP. The published image was validated with no source
+mounted: 32.7 prose / 38.6 code at 32K, the same as the source-mounted run within noise. Evidence: `evidence/2026-10-07/`.
 
 ### Prompt reuse (on by default from `2026-10-05`)
 
@@ -155,6 +184,7 @@ curl http://spark1:8890/v1/chat/completions -H 'Content-Type: application/json' 
   system prompt and history every step; reuse makes each step start in ~0.15-1 s instead of ~16 s, and 4 streams stop
   side requests from queueing. Set the agent's context to 64K or less (Hermes: `context_length: 64000`, `max_tokens:
   8192`, `compression.threshold: 0.4` keeps a conversation under 32K). For long documents use the 1M lane instead.
+- Code (image `2026-10-07`): TensorFold fork branch [`drowzeys/TensorFold:glm53-tp4-2026-10-07`](https://github.com/drowzeys/TensorFold/tree/glm53-tp4-2026-10-07) (DSpark + copy drafts on top of `2026-10-05`)
 - Code: TensorFold fork branch [`drowzeys/TensorFold:glm53-tp4-2026-10-05`](https://github.com/drowzeys/TensorFold/tree/glm53-tp4-2026-10-05)
   ([PR #159](https://github.com/ashhart/TensorFold/pull/159) carries the base engine). Weights:
   [drowzeys/keys-GLM-5.3-EXL3-2.75BPW](https://huggingface.co/drowzeys/keys-GLM-5.3-EXL3-2.75BPW) (KL 0.124 nats /

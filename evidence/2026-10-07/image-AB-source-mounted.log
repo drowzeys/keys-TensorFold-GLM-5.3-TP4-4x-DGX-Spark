@@ -1,0 +1,16 @@
+warmup: 44.55 tok/s, ttft 0.8s
+prose_beekeeper     40.20 tok/s  tok/round 2.352  pass 58.5 ms  ttft 0.0s
+V2-X-1005mount-warm      prose  n=1 tps 40.20 tok/round 2.35 pass 58.5 ms
+10.100.10.1 load 2.15 3.76 3.29 1/1047 1279689
+10.100.10.2 load 2.01 3.87 4.00 3/1024 3404150
+10.100.10.3 load 1.52 2.84 3.22 4/1063 2452071
+10.100.10.5 load 2.09 3.49 3.37 3/1038 2970509
+warmup: 52.88 tok/s, ttft 26.4s
+prose_beekeeper     33.30 tok/s  tok/round 1.973  pass 59.2 ms  ttft 0.0s
+prose_lighthouse    31.56 tok/s  tok/round 1.851  pass 58.7 ms  ttft 26.7s
+prose_nurse         33.74 tok/s  tok/round 1.943  pass 57.6 ms  ttft 26.7s
+V2-X-1005mount-p32       prose  n=3 tps 33.30 tok/round 1.94 pass 58.7 ms
+warmup: 53.73 tok/s, ttft 26.7s
+code_parser         38.14 tok/s  tok/round 2.422  pass 63.5 ms  ttft 26.8s
+code_cache          37.59 tok/s  tok/round 2.281  pass 60.7 ms  ttft 26.8s
+V2-X-1005mount-c32       code   n=2 tps 37.86 tok/round 2.35 pass 62.1 ms

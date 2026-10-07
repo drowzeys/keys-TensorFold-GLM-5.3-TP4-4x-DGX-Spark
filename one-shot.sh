@@ -6,19 +6,23 @@
 #   NODES="spark1 spark2 spark3 spark4"   fabric addresses (ConnectX-7 RoCE port), rank 0 first: it serves HTTP
 #   MODEL=/models/GLM-5.3-EXL3-2.75BPW   the checkpoint, at the same path on all four (an NFS export works)
 #   optional:
+#   DSPARK=/models/keys-GLM-5.3-speculator.dspark-ft2   DSpark drafter (GLM-5.3 license; hf download
+#                                        drowzeys/keys-GLM-5.3-speculator.dspark-ft2): drafts alone, MTP not loaded,
+#                                        confidence policy 0.3 - +5 % prose / +12 % code at 32K, one stream (--parallel 1)
 #   DRAFT=/models/GLM-5.3-DFlash2        DFlash2 drafter (incoai, CC BY-NC-ND 4.0: you download it; +10 % on code)
 #   CONTEXT=140000                       window a stream (1000000 turns on decode context parallelism)
 #   PARALLEL=1                           concurrent streams (each holds its own cache: PARALLEL=4 needs CONTEXT=32768)
 #   RAILS=2                              RoCE rails: both PCIe twins of the QSFP port (1 = the NODES subnet's only)
 #   PORT=8890  IF=enp1s0f1np1  IMAGE=...  DOCKER_ENV="-e KEY=VALUE ..." (extra engine settings, e.g.
 #                                         -e TF_EXL3_PROMPT_DET=slots16 for reproducible long prompts, ~5 % slower prefill)
+#   SERVE_ARGS="--kv-dtype int8"           extra serve flags
 #
 #   ./one-shot.sh check        read-only: ssh, docker, image, checkpoint, rails / GIDs, node settings, free memory
 #   ./one-shot.sh up           start the four ranks          ./one-shot.sh wait    until rank 0 answers (~10 min; run it
 #                                                            right after up: it drops page cache on the nodes while they load)
 #   ./one-shot.sh bench        short decode + 32K prefill    ./one-shot.sh down | logs [RANK]
 set -u
-IMAGE=${IMAGE:-ghcr.io/drowzeys/keys-tensorfold-glm53-tp4-dgx-spark:2026-10-05}
+IMAGE=${IMAGE:-ghcr.io/drowzeys/keys-tensorfold-glm53-tp4-dgx-spark:2026-10-07}
 : "${NODES:?set NODES to the fabric addresses of the four Sparks, rank 0 first}"
 NODES=($NODES)
 [ ${#NODES[@]} -eq 4 ] || { echo "NODES must list exactly four Sparks (rank 0 first)"; exit 1; }
@@ -28,8 +32,10 @@ RAILS=${RAILS:-2}
 CONTEXT=${CONTEXT:-140000}
 PORT=${PORT:-8890}
 DRAFT=${DRAFT:-}
+DSPARK=${DSPARK:-}
 PARALLEL=${PARALLEL:-1}
 DOCKER_ENV=${DOCKER_ENV:-}
+SERVE_ARGS=${SERVE_ARGS:-}
 NAME=tf-glm53
 URL="http://${NODES[0]}:$PORT"
 
@@ -84,6 +90,7 @@ check() {   # read-only; prints FAIL lines and exits 1 if anything blocks a star
       docker image inspect $IMAGE >/dev/null 2>&1 && echo image=ok || echo image=missing
       [ -f '${MODEL:-/nonexistent}/config.json' ] && echo model=ok || echo model=missing
       [ -z '$DRAFT' ] || { [ -f '$DRAFT/config.json' ] && echo draft=ok || echo draft=missing; }
+      [ -z '$DSPARK' ] || { [ -f '$DSPARK/config.json' ] && echo draft=ok || echo draft=missing; }
       echo compaction=\$(cat /proc/sys/vm/compaction_proactiveness)
       echo swappiness=\$(cat /proc/sys/vm/swappiness)
       sudo -n true 2>/dev/null && echo sudo=ok || echo sudo=no
@@ -124,12 +131,18 @@ up() {
     done; [ $ok = 1 ] && break; sleep 5; done
   [ $ok = 1 ] || echo "warning: a node still has under 100 GB available; another job may be using its memory (./one-shot.sh check)"
   if [ -n "$DRAFT" ]; then mounts="$mounts -v $DRAFT:$DRAFT:ro"; denv="-e TF_GLM53_DFLASH=$DRAFT"; fi
+  if [ -n "$DSPARK" ]; then                       # DSpark alone: MTP not loaded, confidence policy (2026-10-07 A/B)
+    [ "$PARALLEL" = 1 ] || { echo "DSPARK drafts one stream at a time: PARALLEL=1"; exit 1; }
+    mounts="$mounts -v $DSPARK:$DSPARK:ro"
+    denv="$denv -e TF_GLM53_DSPARK=$DSPARK -e TF_GLM53_DSPARK_POLICY=confidence -e TF_GLM53_DSPARK_CONFIDENCE=0.3"
+    SERVE_ARGS="--mtp-drafts 0 $SERVE_ARGS"
+  fi
   for r in 3 2 1 0; do
     ssh "${NODES[$r]}" "docker rm -f $NAME-r$r >/dev/null 2>&1; docker run -d --name $NAME-r$r --gpus all \
       --network host --ipc=host --device=/dev/infiniband --ulimit memlock=-1 --cap-add IPC_LOCK $mounts $denv \
       $(nccl_env $r) $DOCKER_ENV \
       $IMAGE python3 -m tensorfold.cli serve $MODEL --tp 4 --rank $r --master $MASTER --port $PORT \
-      --host 0.0.0.0 --name glm-5.3-tf --context $CONTEXT --parallel $PARALLEL" >/dev/null && echo "rank $r started on ${NODES[$r]}"
+      --host 0.0.0.0 --name glm-5.3-tf --context $CONTEXT --parallel $PARALLEL $SERVE_ARGS" >/dev/null && echo "rank $r started on ${NODES[$r]}"
   done
   echo "loading (~10 min from NFS, then decode graphs are captured): ./one-shot.sh wait"
 }
