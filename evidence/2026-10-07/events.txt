@@ -3,7 +3,7 @@
 12:33 S: dsp-ft2 (--mtp-drafts 0): prose short 35.00 2.109 | prose 32K 32.64 2.118 | code 32K 34.35 2.393 (tok/s tok/round) | vs local best 33.98 / MTP 32.6 / DFlash2-base code 40.58 -> fail
 12:33 S: DONE - live MTP-only 1M server being restored for Hermes (default unchanged)
 13:50 P: live server down (Hermes offline ~50 min; longer if a setting passes): DSpark-ft2 alone, live policy/depth sweep vs the local best
-14:41 P: sweep (ft2 DSpark alone; prose 32K tok/s tok/round, code 32K tok/s, go): cost 31.76 2.109 c34.74 fail; fix2 31.54 1.874 c36.40 fail; fix3 30.84 2.038 c35.56 fail; fix4 28.90 2.106 c35.79 fail; conf03 33.64 1.887 c39.20 fail; conf05 32.72 1.774 c38.82 fail; conf07 32.11 1.715 c36.10 fail; | ft8 ref 34.2 / code 42.9
+14:41 P: sweep (ft2 DSpark alone; prose 32K tok/s tok/round, code 32K tok/s, go): cost 31.76 2.109 c34.74 fail; fix2 31.54 1.874 c36.40 fail; fix3 30.84 2.038 c35.56 fail; fix4 28.90 2.106 c35.79 fail; conf03 33.64 1.887 c39.20 fail; conf05 32.72 1.774 c38.82 fail; conf07 32.11 1.715 c36.10 fail; | local best ref 34.2 / code 42.9
 14:42 P: no setting beat the local best - DSpark parked (publishable recipe stays MTP-only)
 14:42 P: DONE - live MTP-only 1M server being restored for Hermes (default unchanged)
 14:56 A: live server down (Hermes offline ~75-90 min): option A - MTP-only vs DSpark-ft2 conf 0.3, same session, full bench
