@@ -8,6 +8,24 @@ Image `ghcr.io/drowzeys/keys-tensorfold-glm53-tp4-dgx-spark:2026-10-10` (= `late
 (GLM-5.3 license), **+5 % prose / +12 % code** over MTP at 32K with thinking on ([below](#dspark-drafter-2026-10-07)).
 DFlash2 remains an optional add-on.
 
+## New 2026-10-10: mlx-serve + TensorFold 1.0.5 engine, drafter in the image
+
+A second prebuilt image serves the abliterated weights with [mlx-serve](https://github.com/ddalcu/mlx-serve) on rank 0
+and the Zig engine on [TensorFold 1.0.5](https://github.com/ashhart/TensorFold), with the DSpark ft2 drafter inside the
+image. It has its own recipe:
+**[keys-GLM-5.3-EXL3-2.75BPW-MixedK-Ablit-TF-Engine-4-DGXSparks](https://github.com/drowzeys/keys-GLM-5.3-EXL3-2.75BPW-MixedK-Ablit-TF-Engine-4-DGXSparks)**,
+image `ghcr.io/drowzeys/keys-glm53-exl3-275-ablit-tf-engine-4-dgxsparks:2026-10-10`.
+
+| That image, 32K context, 4 streams, thinking on (High effort), greedy, 512 tokens | Result |
+|---|---|
+| Prose, one stream | **38.1 tok/s** |
+| Code, one stream | **56.2 tok/s** |
+| 25K-token prompt: first time / with a changed last line (prompt reuse) | 23.2 s / **3.3 s** |
+| Load time | 350 s |
+
+It was measured at 32K context with 4 streams only; for longer context (up to 1M) use the image below. The two
+recipes' numbers come from different bench prompts and thinking effort, so do not compare them row for row.
+
 > **Upgrade from `2026-10-04` / `2026-10-04-opt` / `2026-10-05` / `2026-10-07`:** `2026-10-09` fixes a hang that
 > agent clients (title requests, cancelled requests) could trigger on all four ranks, and a stall that held the server
 > for hours. `2026-10-04` also lacks the thinking-off fix and the stop-on-disconnect fix. Pull `2026-10-09` on every
