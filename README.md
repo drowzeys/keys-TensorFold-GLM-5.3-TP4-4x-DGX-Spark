@@ -2,7 +2,7 @@
 
 The full **GLM-5.3** (753B total, ~40B active) served natively by [TensorFold](https://github.com/ashhart/TensorFold)
 across **four NVIDIA DGX Sparks** (GB10, one rank per Spark over ConnectX-7 RoCE). No vLLM in the serving path.
-Image `ghcr.io/drowzeys/keys-tensorfold-glm53-tp4-dgx-spark:2026-10-09` (= `latest`). **The default needs no extra draft model**
+Image `ghcr.io/drowzeys/keys-tensorfold-glm53-tp4-dgx-spark:2026-10-10` (= `latest`). **The default needs no extra draft model**
 (GLM-5.3's own MTP layer drafts). **New 2026-10-07:** an openly licensed DSpark drafter,
 [drowzeys/keys-GLM-5.3-speculator.dspark-ft2](https://huggingface.co/drowzeys/keys-GLM-5.3-speculator.dspark-ft2)
 (GLM-5.3 license), **+5 % prose / +12 % code** over MTP at 32K with thinking on ([below](#dspark-drafter-2026-10-07)).
@@ -11,7 +11,8 @@ DFlash2 remains an optional add-on.
 > **Upgrade from `2026-10-04` / `2026-10-04-opt` / `2026-10-05` / `2026-10-07`:** `2026-10-09` fixes a hang that
 > agent clients (title requests, cancelled requests) could trigger on all four ranks, and a stall that held the server
 > for hours. `2026-10-04` also lacks the thinking-off fix and the stop-on-disconnect fix. Pull `2026-10-09` on every
-> node and restart; nothing else changes ([what changed](#what-changed-in-2026-10-09)).
+> node and restart; nothing else changes ([what changed](#what-changed-in-2026-10-09)). `2026-10-10` is `2026-10-09`
+> plus the opt-in Zig engine below; with default settings it serves exactly as `2026-10-09` does.
 
 **Abliterated weights:** [drowzeys/keys-GLM-5.3-EXL3-2.75BPW-Abliterated](https://huggingface.co/drowzeys/keys-GLM-5.3-EXL3-2.75BPW-Abliterated)
 (gated, automatic approval after the Responsible Use form). Stock parent:
@@ -123,6 +124,49 @@ whole request (they ran thinking off). Ours, same prompts and timing, **thinking
 
 Their numbers are from their repository, not re-measured here. Their quant is larger (3.0 bpw, KL 0.109 vs our 0.124:
 better quality), so this compares recipes, not equal-quality builds.
+
+## New in `2026-10-10`: the Zig engine on TensorFold 1.0.4 (opt-in, `ZIG=1`)
+
+`2026-10-10` is the `2026-10-09` image with one more directory, `/opt/tensorfold-zig`: TensorFold 1.0.4's native
+(Zig) server with our GLM-5.3 TP4 CUDA port. **The default is unchanged** (the Python engine). To try the Zig engine:
+
+```bash
+ZIG=1 ./one-shot.sh up            # same API, same flags, same model directory
+```
+
+Measured on four DGX Sparks, thinking on, tokens identical to the Python engine in every gate:
+
+| 32K context, tok/s (Zig / Python) | prose | code |
+|---|---:|---:|
+| 1 stream, MTP drafts | 32.3 / 31.2 | 35.1 / 34.3 |
+| 1 stream, DSpark | 32.1 / 30.2 | 39.9 / 37.9 |
+| 1 stream, DFlash2 (optional add-on) | 38.2 / 36.9 | 43.4 / 41.7 |
+| 4 streams aggregate, MTP drafts | 79.4 / 78.5 | 101.6 / 100.0 |
+| 4 streams aggregate, DFlash2 | 79.4 / 78.6 | 110.0 / 108.6 |
+| 4 streams aggregate, DSpark (Zig only: `PARALLEL=4` with `DSPARK=`) | 81.5 | 101.3 |
+
+Also: warm time to first token 0.95 s against 1.35 s; a 1M-token prompt found its needle (decode 32.1 tok/s).
+
+Hang behaviour, tested at 163,840 tokens with one stream and at 32K with four:
+
+- a client that leaves during the prompt pass stops every rank in about 6 s (the next request starts in 2 s);
+- a rank that dies or stands still takes the others down in seconds (dead) or at the stall limit (stuck), with an
+  exit code and a log line (`./one-shot.sh watch` was not exercised with the Zig engine);
+- a broken four-stream world exits instead of leaving `/health` green;
+- stopping rank 0 with a request in flight ends that request and exits cleanly on every rank.
+
+The stall limit is `TF_GLM53_STALL_S` (900 s up to 166K tokens of context, longer above; `0` turns it off).
+
+**Status: release candidate.** The speed and parity gates ran on the commits before the last hang fixes, and those
+fixes change only the server's refusal and exit paths; the gates have not been repeated on the final commit, and the
+engine was tested mounted into the `2026-10-05` image, not from this image's own layer. Not tested: a 1M-token prompt
+through the server under the stall watchdog. The kernel pack and tile tables in the image were recorded for the
+2.75 bpw checkpoints of this recipe; rank 0 checks at start that the pack covers the context, stream count and
+drafter asked for, and stops with a message if it does not. Report problems as issues here; `ZIG=0` (the default) is
+the validated path.
+
+Code: [`drowzeys/TensorFold:glm53-cuda-tp4-on-1.0.4`](https://github.com/drowzeys/TensorFold/tree/glm53-cuda-tp4-on-1.0.4)
+(commit `1947fee`, on upstream `v1.0.4`).
 
 ## What changed in `2026-10-09`
 

@@ -30,7 +30,7 @@ when a check fails. Never guess around a failure.
    the live path is the ablit overlay `/mnt/spark2-models-local/GLM-5.3-EXL3-2.75-mixedK-EXL3NE-ablit`
    (`ablit/README.md`, `cluster.env`).
 3. **Image** (once, on every node; if the pull cannot resolve `ghcr.io`, the node lost its DNS servers after a
-   reboot: `sudo resolvectl dns <default-route interface> 1.1.1.1 8.8.8.8`): `docker pull ghcr.io/drowzeys/keys-tensorfold-glm53-tp4-dgx-spark:2026-10-09`.
+   reboot: `sudo resolvectl dns <default-route interface> 1.1.1.1 8.8.8.8`): `docker pull ghcr.io/drowzeys/keys-tensorfold-glm53-tp4-dgx-spark:2026-10-10`.
    An older tag (`2026-10-04` ... `2026-10-07`) can hang all four ranks under agent traffic: upgrade it.
 4. **Node settings** (after every reboot, on every node): `sudo node/gb10-node-settings.sh`.
 5. **Check**: `NODES=... MODEL=... ./one-shot.sh check` must end with `check: OK`. Fix each `FAIL`. Treat `WARN` lines

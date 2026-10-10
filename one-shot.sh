@@ -16,6 +16,11 @@
 #   PORT=8890  IF=enp1s0f1np1  IMAGE=...  DOCKER_ENV="-e KEY=VALUE ..." (extra engine settings, e.g.
 #                                         -e TF_EXL3_PROMPT_DET=slots16 for reproducible long prompts, ~5 % slower prefill)
 #   SERVE_ARGS="--kv-dtype int8"           extra serve flags
+#   ZIG=1                                the Zig engine (TensorFold 1.0.4's native server with our GLM-5.3 TP4 port;
+#                                        image 2026-10-10 and later): same API, same flags, token-identical to the Python
+#                                        engine in the gates; DSPARK / DRAFT also with PARALLEL > 1. Its stall limit is
+#                                        TF_GLM53_STALL_S (900 s up to 166K of context; a rank that dies ends the
+#                                        others within seconds) instead of TF_GLM_MULTI_WATCHDOG_S
 #   stall handling (image defaults since 2026-10-09; set through DOCKER_ENV):
 #     TF_GLM_MULTI_WATCHDOG_S=900   a decode round or prompt chunk stalled this long dumps stacks and exits the rank;
 #                                   its peers then exit too (0 = off). The four ranks must restart together: `watch`
@@ -28,7 +33,7 @@
 #   ./one-shot.sh watch        supervise: if any rank exits (stall watchdog, crash), save the four logs, restart all
 #                              four (down, up, wait); gives up after MAX_RESTARTS (3) restarts within an hour
 set -u
-IMAGE=${IMAGE:-ghcr.io/drowzeys/keys-tensorfold-glm53-tp4-dgx-spark:2026-10-09}
+IMAGE=${IMAGE:-ghcr.io/drowzeys/keys-tensorfold-glm53-tp4-dgx-spark:2026-10-10}
 : "${NODES:?set NODES to the fabric addresses of the four Sparks, rank 0 first}"
 NODES=($NODES)
 [ ${#NODES[@]} -eq 4 ] || { echo "NODES must list exactly four Sparks (rank 0 first)"; exit 1; }
@@ -42,6 +47,8 @@ DSPARK=${DSPARK:-}
 PARALLEL=${PARALLEL:-1}
 DOCKER_ENV=${DOCKER_ENV:-}
 SERVE_ARGS=${SERVE_ARGS:-}
+ZIG=${ZIG:-0}
+SERVE="python3 -m tensorfold.cli serve"; [ "$ZIG" = 1 ] && SERVE=/opt/tensorfold-zig/serve
 NAME=tf-glm53
 URL="http://${NODES[0]}:$PORT"
 
@@ -138,7 +145,7 @@ up() {
   [ $ok = 1 ] || echo "warning: a node still has under 100 GB available; another job may be using its memory (./one-shot.sh check)"
   if [ -n "$DRAFT" ]; then mounts="$mounts -v $DRAFT:$DRAFT:ro"; denv="-e TF_GLM53_DFLASH=$DRAFT"; fi
   if [ -n "$DSPARK" ]; then                       # DSpark alone: MTP not loaded, confidence policy (2026-10-07 A/B)
-    [ "$PARALLEL" = 1 ] || { echo "DSPARK drafts one stream at a time: PARALLEL=1"; exit 1; }
+    [ "$PARALLEL" = 1 ] || [ "$ZIG" = 1 ] || { echo "DSPARK drafts one stream at a time: PARALLEL=1 (or ZIG=1)"; exit 1; }
     mounts="$mounts -v $DSPARK:$DSPARK:ro"
     denv="$denv -e TF_GLM53_DSPARK=$DSPARK -e TF_GLM53_DSPARK_POLICY=confidence -e TF_GLM53_DSPARK_CONFIDENCE=0.3"
     SERVE_ARGS="--mtp-drafts 0 $SERVE_ARGS"
@@ -147,7 +154,7 @@ up() {
     ssh "${NODES[$r]}" "docker rm -f $NAME-r$r >/dev/null 2>&1; docker run -d --name $NAME-r$r --gpus all \
       --network host --ipc=host --device=/dev/infiniband --ulimit memlock=-1 --cap-add IPC_LOCK $mounts $denv \
       $(nccl_env $r) $DOCKER_ENV \
-      $IMAGE python3 -m tensorfold.cli serve $MODEL --tp 4 --rank $r --master $MASTER --port $PORT \
+      $IMAGE $SERVE $MODEL --tp 4 --rank $r --master $MASTER --port $PORT \
       --host 0.0.0.0 --name glm-5.3-tf --context $CONTEXT --parallel $PARALLEL $SERVE_ARGS" >/dev/null && echo "rank $r started on ${NODES[$r]}"
   done
   echo "loading (~10 min from NFS, then decode graphs are captured): ./one-shot.sh wait"
@@ -193,7 +200,7 @@ watch() {   # supervisor: a rank that exits (the stall watchdog, a crash) takes 
       now=$(date +%s); dir=logs-$(date +%Y%m%d-%H%M%S); mkdir -p "$dir"
       echo "$(date +%T) down:$st - logs in $dir/, restarting all four"
       for r in 0 1 2 3; do ssh "${NODES[$r]}" "docker logs $NAME-r$r" > "$dir/rank$r.log" 2>&1; done
-      grep -h -m3 -E "watchdog|out of step|Traceback" "$dir"/rank*.log | head -6
+      grep -h -m3 -E "watchdog|out of step|Traceback|has gone|no progress on the request" "$dir"/rank*.log | head -6
       stamps=($(for t in "${stamps[@]}"; do [ $((now - t)) -lt 3600 ] && echo "$t"; done) "$now")
       if [ ${#stamps[@]} -gt "$max" ]; then
         echo "$(date +%T) ${#stamps[@]} restarts within an hour: giving up (left down)"; down; return 1
