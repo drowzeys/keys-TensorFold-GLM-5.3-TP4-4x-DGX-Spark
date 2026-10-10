@@ -13,7 +13,7 @@ DFlash2 remains an optional add-on.
 A second prebuilt image serves the abliterated weights with [mlx-serve](https://github.com/ddalcu/mlx-serve) on rank 0
 and the Zig engine on [TensorFold 1.0.5](https://github.com/ashhart/TensorFold), with the DSpark ft2 drafter inside the
 image. It has its own recipe:
-**[keys-GLM-5.3-EXL3-2.75BPW-MixedK-Ablit-TF-Engine-4-DGXSparks](https://github.com/drowzeys/keys-GLM-5.3-EXL3-2.75BPW-MixedK-Ablit-TF-Engine-4-DGXSparks)**,
+**[keys-GLM-5.3-EXL3-2.75BPW-MixedK-Ablit-MLX-Serve-TF-Engine-4-DGXSparks](https://github.com/drowzeys/keys-GLM-5.3-EXL3-2.75BPW-MixedK-Ablit-MLX-Serve-TF-Engine-4-DGXSparks)**,
 image `ghcr.io/drowzeys/keys-glm53-exl3-275-ablit-tf-engine-4-dgxsparks:2026-10-10`.
 
 | That image, 32K context, 4 streams, thinking on (High effort), greedy, 512 tokens | Result |
