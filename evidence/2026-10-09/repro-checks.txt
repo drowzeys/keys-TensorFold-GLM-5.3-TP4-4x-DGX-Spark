@@ -1,0 +1,5 @@
+PASS think_prompt_tail ['hi', '<|assistant|>', '<think>', '</think>']
+PASS thinking_off_no_reasoning ('399', {'prompt_tokens': 26, 'completion_tokens': 3, 'total_tokens': 29, 'prompt_tokens_details': {'cached_tokens': 0}, 'completion_tokens_details': {'reasoning_tokens': 0}})
+PASS disconnect_stream ({'t': 32.2, 'ev': 'probe', 'tag': 'stream', 'code': 200, 'secs': 0.3, 'text': 'PONG'}, 22.6)
+PASS disconnect_nonstream ({'t': 62.2, 'ev': 'probe', 'tag': 'nonstream', 'code': 200, 'secs': 0.1, 'text': 'PONG'}, 21.9)
+PASS bgcut ({'fg1': [200, 28.5, 900], 'fg2': [200, 26.9, 200]}, 0.1)

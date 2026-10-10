@@ -16,13 +16,19 @@
 #   PORT=8890  IF=enp1s0f1np1  IMAGE=...  DOCKER_ENV="-e KEY=VALUE ..." (extra engine settings, e.g.
 #                                         -e TF_EXL3_PROMPT_DET=slots16 for reproducible long prompts, ~5 % slower prefill)
 #   SERVE_ARGS="--kv-dtype int8"           extra serve flags
+#   stall handling (image defaults since 2026-10-09; set through DOCKER_ENV):
+#     TF_GLM_MULTI_WATCHDOG_S=900   a decode round or prompt chunk stalled this long dumps stacks and exits the rank;
+#                                   its peers then exit too (0 = off). The four ranks must restart together: `watch`
+#     TF_STREAM_WRITE_TIMEOUT_S=120 a streaming client that stops reading (without closing) is dropped after this long
 #
 #   ./one-shot.sh check        read-only: ssh, docker, image, checkpoint, rails / GIDs, node settings, free memory
 #   ./one-shot.sh up           start the four ranks          ./one-shot.sh wait    until rank 0 answers (~10 min; run it
 #                                                            right after up: it drops page cache on the nodes while they load)
 #   ./one-shot.sh bench        short decode + 32K prefill    ./one-shot.sh down | logs [RANK]
+#   ./one-shot.sh watch        supervise: if any rank exits (stall watchdog, crash), save the four logs, restart all
+#                              four (down, up, wait); gives up after MAX_RESTARTS (3) restarts within an hour
 set -u
-IMAGE=${IMAGE:-ghcr.io/drowzeys/keys-tensorfold-glm53-tp4-dgx-spark:2026-10-07}
+IMAGE=${IMAGE:-ghcr.io/drowzeys/keys-tensorfold-glm53-tp4-dgx-spark:2026-10-09}
 : "${NODES:?set NODES to the fabric addresses of the four Sparks, rank 0 first}"
 NODES=($NODES)
 [ ${#NODES[@]} -eq 4 ] || { echo "NODES must list exactly four Sparks (rank 0 first)"; exit 1; }
@@ -171,6 +177,34 @@ wait_up() {
   echo "not up after 30 min: ./one-shot.sh logs 0"; return 1
 }
 
+down() { local r; for r in 0 1 2 3; do ssh "${NODES[$r]}" "docker rm -f $NAME-r$r >/dev/null 2>&1"; done; echo stopped; }
+
+watch() {   # supervisor: a rank that exits (the stall watchdog, a crash) takes the server down; restart all four
+  # together - one rank alone cannot rejoin the others' NCCL group, so the containers carry no --restart policy
+  local max=${MAX_RESTARTS:-3} stamps=() r n st now dir
+  echo "watching $URL (ctrl-c to stop watching; the server keeps running)"
+  while true; do
+    st=""
+    for r in 0 1 2 3; do
+      n=$(ssh -o ConnectTimeout=10 "${NODES[$r]}" "docker inspect -f '{{.State.Status}}:{{.State.ExitCode}}' $NAME-r$r" 2>/dev/null)
+      case "$n" in running:*) ;; *) st="$st rank $r ${n:-missing}" ;; esac
+    done
+    if [ -n "$st" ]; then
+      now=$(date +%s); dir=logs-$(date +%Y%m%d-%H%M%S); mkdir -p "$dir"
+      echo "$(date +%T) down:$st - logs in $dir/, restarting all four"
+      for r in 0 1 2 3; do ssh "${NODES[$r]}" "docker logs $NAME-r$r" > "$dir/rank$r.log" 2>&1; done
+      grep -h -m3 -E "watchdog|out of step|Traceback" "$dir"/rank*.log | head -6
+      stamps=($(for t in "${stamps[@]}"; do [ $((now - t)) -lt 3600 ] && echo "$t"; done) "$now")
+      if [ ${#stamps[@]} -gt "$max" ]; then
+        echo "$(date +%T) ${#stamps[@]} restarts within an hour: giving up (left down)"; down; return 1
+      fi
+      down >/dev/null; sleep 30
+      up && wait_up || { echo "$(date +%T) restart failed"; return 1; }
+    fi
+    sleep 30
+  done
+}
+
 bench() {   # short greedy prose + code decode, then one cold 32K prompt (prefill / TTFT)
   python3 - "$URL" <<'EOF'
 import json, sys, time, urllib.request
@@ -198,7 +232,8 @@ case "${1:-}" in
   up) up ;;
   wait) wait_up ;;
   bench) bench ;;
-  down) for r in 0 1 2 3; do ssh "${NODES[$r]}" "docker rm -f $NAME-r$r >/dev/null 2>&1"; done; echo stopped ;;
+  watch) watch ;;
+  down) down ;;
   logs) r=${2:-0}; ssh "${NODES[$r]}" "docker logs -f $NAME-r$r" ;;
-  *) sed -n 2,22p "$0"; exit 1 ;;
+  *) sed -n 2,29p "$0"; exit 1 ;;
 esac

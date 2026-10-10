@@ -1,0 +1,29 @@
+[tensorfold] warning: non-loopback server has no API key; requests are open
+[tensorfold] GLM-5.3 runs on four NVIDIA GPUs with 128 GB each (four DGX Sparks): serve with --tp 4 on all four (docs/design/glm-moe-dsa-tp4.md)
+[tensorfold] loading glm-5.3-tf: GLM-5.3 (glm_moe_dsa) on CUDA, rank 3 of 4
+[tensorfold] RoCE one-shot reduce ready on rocep1s0f1,roceP2p1s0f1 (ranks bit-equal: True; equals the NCCL rank-order sum: True; windows of 3 and 32 rows)
+[tensorfold] rank 3: took rank 0's tiles (416 of 575 linears differed)
+[tensorfold] rank 3: tuned 8 linear shapes, 7 retiled: 6144x2048 (8, 4)->(8, 8), 6144x640 (8, 4)->(32, 4), 2048x4096 (4, 4)->(1, 8), 4096x6144 (4, 4)->(2, 8), 6144x3072 (8, 4)->(2, 8), 3072x6144 (4, 4)->(1, 8), 6144x512 (8, 4)->(16, 8)
+[tensorfold] rank 3: one launch for 4 linear groups: 6144x2048 + 6144x640 [(8, 8), (16, 8)], 6144x3072 + 6144x3072 [(2, 8), (2, 8)], 2048x4096 + 2048x4096 [(8, 4), (8, 4)], 6144x512 + 6144x512 [(32, 4), (32, 4)]
+[tensorfold] rank 3: host anon 1.4 GiB after load, device free 23.7 of 121.6 GiB
+[tensorfold] GLM-5.3 rank 3/4: 416 layers loaded in 425s, context 163840 (fused, CUDA graphs; MTP drafts 2; token-level DSA past 2048)
+[tensorfold] rank 3: host anon 1.4 GiB, device free 23.7 GiB before warm-up
+[tensorfold] rank 3: 87 decode graphs captured in 23.9s (key buckets [None, 4096, 8192, 16384, 32768, 65536, 131072, 262144])
+[tensorfold] rank 3 ready in 455.0s, following rank 0
+/usr/local/lib/python3.12/dist-packages/triton/language/core.py:373: UserWarning: Value 32 exceeds the maximum bitwidth (32) for type 'int32'. This may result in undefined behavior.
+  warn(
+Timeout (0:01:00)!
+Thread 0x0000e011d3225720 (most recent call first):
+  File "/opt/tensorfold/src/tensorfold/families/glm_moe_dsa/cuda/runner.py", line 596 in _sample_local
+  File "/opt/tensorfold/src/tensorfold/families/glm_moe_dsa/cuda/runner.py", line 1039 in generate
+  File "/usr/local/lib/python3.12/dist-packages/torch/utils/_contextlib.py", line 124 in decorate_context
+  File "/opt/tensorfold/src/tensorfold/families/glm_moe_dsa/cuda/engine.py", line 383 in gen
+  File "/opt/tensorfold/src/tensorfold/families/glm_moe_dsa/cuda/prefixes.py", line 575 in run
+  File "/opt/tensorfold/src/tensorfold/families/glm_moe_dsa/cuda/engine.py", line 393 in _run
+  File "/opt/tensorfold/src/tensorfold/families/glm_moe_dsa/cuda/engine.py", line 568 in follow
+  File "/opt/tensorfold/src/tensorfold/cli.py", line 297 in _serve_cuda
+  File "/opt/tensorfold/src/tensorfold/cli.py", line 388 in cmd_serve
+  File "/opt/tensorfold/src/tensorfold/cli.py", line 41 in main
+  File "/opt/tensorfold/src/tensorfold/cli.py", line 563 in <module>
+  File "<frozen runpy>", line 88 in _run_code
+  File "<frozen runpy>", line 198 in _run_module_as_main

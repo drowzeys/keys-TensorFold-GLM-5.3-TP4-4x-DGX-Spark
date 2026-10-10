@@ -1,0 +1,34 @@
+{"t": 0.0, "ev": "start", "test": "think", "health": {"ok": true, "backend": "tensorfold", "busy": false, "requests_running": 0, "requests_total": 0, "prompt_tokens_total": 0, "completion_tokens_total": 0, "prefill_seconds_total": 0, "decode_seconds_total": 0, "cached_tokens_total": 0, "rounds_total": 0, "drafted_total": 0, "accepted_total": 0, "iteration_s": 0.0, "context_length": 163840}}
+{"t": 0.8, "ev": "think", "enable_thinking": false, "code": 200, "content": "399", "reasoning": "", "usage": {"prompt_tokens": 26, "completion_tokens": 3, "total_tokens": 29, "prompt_tokens_details": {"cached_tokens": 0}, "completion_tokens_details": {"reasoning_tokens": 0}}}
+{"t": 1.7, "ev": "think", "enable_thinking": true, "code": 200, "content": "391", "reasoning": "17*23 = 17*20 + 17*3 = 340 + 51 = 391", "usage": {"prompt_tokens": 25, "completion_tokens": 27, "total_tokens": 52, "prompt_tokens_details": {"cached_tokens": 0}, "completion_tokens_details": {"reasoning_tokens": 24}}}
+{"t": 1.7, "ev": "think_prompt_tail", "tail": ["hi", "<|assistant|>", "<think>", "</think>"]}
+{"t": 1.7, "ev": "end", "test": "think"}
+{"t": 1.7, "ev": "start", "test": "sdisc", "health": {"ok": true, "backend": "tensorfold", "busy": false, "requests_running": 0, "requests_total": 2, "prompt_tokens_total": 51, "completion_tokens_total": 30, "prefill_seconds_total": 0.889745, "decode_seconds_total": 0.726209, "cached_tokens_total": 0, "rounds_total": 13, "drafted_total": 0, "accepted_total": 0, "iteration_s": 0.0, "context_length": 163840}}
+{"t": 9.7, "ev": "cut", "tag": "stream", "stream": true, "max_tokens": 163764, "bytes": 30930, "head": "ndex\": 0, \"delta\": {\"content\": \"A connection\"}, \"finish_reason\": null}]}\n\ndata: {\"id\": \"chatcmpl-89e4f96b152a4694bd72d3c6\", \"object\": \"chat.completion.chunk\", \"created\": 1791601817, \"model\": \"glm-5.3-tf\", \"choices\": [{\"index\": 0, \"delta\": {\"content\": \" between two rooms\"}, \"finish_reason\": null}]}\n\n"}
+{"t": 11.1, "ev": "health", "tag": "stream", "busy": true, "running": 1, "it": 0.0, "done": 2, "gpu": {"1": "96", "2": "96", "3": "96", "5": "96"}}
+{"t": 15.5, "ev": "health", "tag": "stream", "busy": false, "running": 0, "it": 0.0, "done": 3, "gpu": {"1": "0", "2": "96", "3": "96", "5": "96"}}
+{"t": 20.3, "ev": "health", "tag": "stream", "busy": false, "running": 0, "it": 0.0, "done": 3, "gpu": {"1": "0", "2": "96", "3": "96", "5": "96"}}
+{"t": 24.6, "ev": "health", "tag": "stream", "busy": false, "running": 0, "it": 0.0, "done": 3, "gpu": {"1": "0", "2": "96", "3": "96", "5": "96"}}
+{"t": 29.0, "ev": "health", "tag": "stream", "busy": false, "running": 0, "it": 0.0, "done": 3, "gpu": {"1": "0", "2": "96", "3": "96", "5": "96"}}
+{"t": 32.2, "ev": "probe", "tag": "stream", "code": 200, "secs": 0.3, "text": "PONG"}
+{"t": 32.2, "ev": "cut_to_probe_done", "tag": "stream", "secs": 22.6}
+{"t": 32.2, "ev": "end", "test": "sdisc"}
+{"t": 32.2, "ev": "start", "test": "ndisc", "health": {"ok": true, "backend": "tensorfold", "busy": false, "requests_running": 0, "requests_total": 4, "prompt_tokens_total": 148, "completion_tokens_total": 323, "prefill_seconds_total": 1.461604, "decode_seconds_total": 8.501336, "cached_tokens_total": 0, "rounds_total": 155, "drafted_total": 0, "accepted_total": 0, "iteration_s": 0.0, "context_length": 163840}}
+{"t": 40.3, "ev": "cut", "tag": "nonstream", "stream": false, "max_tokens": 163764, "bytes": 0, "head": ""}
+{"t": 41.6, "ev": "health", "tag": "nonstream", "busy": true, "running": 1, "it": 0.0, "done": 4, "gpu": {"1": "96", "2": "96", "3": "95", "5": "96"}}
+{"t": 46.0, "ev": "health", "tag": "nonstream", "busy": false, "running": 0, "it": 0.0, "done": 5, "gpu": {"1": "0", "2": "96", "3": "96", "5": "96"}}
+{"t": 50.4, "ev": "health", "tag": "nonstream", "busy": false, "running": 0, "it": 0.0, "done": 5, "gpu": {"1": "0", "2": "96", "3": "96", "5": "96"}}
+{"t": 54.8, "ev": "health", "tag": "nonstream", "busy": false, "running": 0, "it": 0.0, "done": 5, "gpu": {"1": "0", "2": "96", "3": "96", "5": "96"}}
+{"t": 59.1, "ev": "health", "tag": "nonstream", "busy": false, "running": 0, "it": 0.0, "done": 5, "gpu": {"1": "0", "2": "96", "3": "96", "5": "96"}}
+{"t": 62.2, "ev": "probe", "tag": "nonstream", "code": 200, "secs": 0.1, "text": "PONG"}
+{"t": 62.2, "ev": "cut_to_probe_done", "tag": "nonstream", "secs": 21.9}
+{"t": 62.2, "ev": "end", "test": "ndisc"}
+{"t": 62.2, "ev": "start", "test": "bgcut", "health": {"ok": true, "backend": "tensorfold", "busy": false, "requests_running": 0, "requests_total": 6, "prompt_tokens_total": 245, "completion_tokens_total": 635, "prefill_seconds_total": 1.462298, "decode_seconds_total": 16.617935, "cached_tokens_total": 97, "rounds_total": 304, "drafted_total": 0, "accepted_total": 0, "iteration_s": 0.0, "context_length": 163840}}
+{"t": 68.2, "ev": "bg_streaming", "bytes": 22496}
+{"t": 72.2, "ev": "health_mid", "h": {"ok": true, "backend": "tensorfold", "busy": true, "requests_running": 1, "requests_total": 6, "prompt_tokens_total": 245, "completion_tokens_total": 963, "prefill_seconds_total": 1.462298, "decode_seconds_total": 16.617935, "cached_tokens_total": 97, "rounds_total": 304, "drafted_total": 0, "accepted_total": 0, "iteration_s": 0.0, "context_length": 163840}}
+{"t": 72.2, "ev": "bg_closed"}
+{"t": 96.8, "ev": "fg_done", "name": "fg1", "res": [200, 28.5, 900]}
+{"t": 102.1, "ev": "fg_done", "name": "fg2", "res": [200, 26.9, 200]}
+{"t": 102.1, "ev": "bgcut_result", "res": {"fg1": [200, 28.5, 900], "fg2": [200, 26.9, 200]}, "health": {"ok": true, "backend": "tensorfold", "busy": false, "requests_running": 0, "requests_total": 9, "prompt_tokens_total": 331, "completion_tokens_total": 2066, "prefill_seconds_total": 2.40341, "decode_seconds_total": 55.582058, "cached_tokens_total": 97, "rounds_total": 1021, "drafted_total": 0, "accepted_total": 0, "iteration_s": 0.0, "context_length": 163840}}
+{"t": 102.2, "ev": "probe", "tag": "bgcut", "code": 200, "secs": 0.1, "text": "PONG"}
+{"t": 102.2, "ev": "end", "test": "bgcut"}

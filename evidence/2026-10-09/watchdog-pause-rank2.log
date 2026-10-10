@@ -1,0 +1,12 @@
+23:20:57 pause rank 2
+23:20:59 +2s r0=running:0 r1=running:0 r2=paused:0 r3=running:0
+23:21:05 +8s r0=running:0 r1=running:0 r2=paused:0 r3=running:0
+23:21:12 +15s r0=running:0 r1=running:0 r2=paused:0 r3=running:0
+23:21:19 +22s r0=running:0 r1=running:0 r2=paused:0 r3=running:0
+23:21:26 +29s r0=running:0 r1=running:0 r2=paused:0 r3=running:0
+23:21:32 +35s r0=running:0 r1=running:0 r2=paused:0 r3=running:0
+23:21:39 +42s r0=running:0 r1=running:0 r2=paused:0 r3=running:0
+23:21:45 +48s r0=running:0 r1=running:0 r2=paused:0 r3=running:0
+23:21:52 +55s r0=running:0 r1=running:0 r2=paused:0 r3=running:0
+23:21:58 +61s r0=running:0 r1=running:0 r2=paused:0 r3=running:0
+23:22:05 +68s r0=exited:1 r1=exited:1 r2=paused:0 r3=exited:1

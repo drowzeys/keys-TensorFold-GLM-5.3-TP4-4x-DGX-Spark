@@ -2,11 +2,16 @@
 
 The full **GLM-5.3** (753B total, ~40B active) served natively by [TensorFold](https://github.com/ashhart/TensorFold)
 across **four NVIDIA DGX Sparks** (GB10, one rank per Spark over ConnectX-7 RoCE). No vLLM in the serving path.
-Image `ghcr.io/drowzeys/keys-tensorfold-glm53-tp4-dgx-spark:2026-10-07` (= `latest`). **The default needs no extra draft model**
+Image `ghcr.io/drowzeys/keys-tensorfold-glm53-tp4-dgx-spark:2026-10-09` (= `latest`). **The default needs no extra draft model**
 (GLM-5.3's own MTP layer drafts). **New 2026-10-07:** an openly licensed DSpark drafter,
 [drowzeys/keys-GLM-5.3-speculator.dspark-ft2](https://huggingface.co/drowzeys/keys-GLM-5.3-speculator.dspark-ft2)
 (GLM-5.3 license), **+5 % prose / +12 % code** over MTP at 32K with thinking on ([below](#dspark-drafter-2026-10-07)).
 DFlash2 remains an optional add-on.
+
+> **Upgrade from `2026-10-04` / `2026-10-04-opt` / `2026-10-05` / `2026-10-07`:** `2026-10-09` fixes a hang that
+> agent clients (title requests, cancelled requests) could trigger on all four ranks, and a stall that held the server
+> for hours. `2026-10-04` also lacks the thinking-off fix and the stop-on-disconnect fix. Pull `2026-10-09` on every
+> node and restart; nothing else changes ([what changed](#what-changed-in-2026-10-09)).
 
 **Abliterated weights:** [drowzeys/keys-GLM-5.3-EXL3-2.75BPW-Abliterated](https://huggingface.co/drowzeys/keys-GLM-5.3-EXL3-2.75BPW-Abliterated)
 (gated, automatic approval after the Responsible Use form). Stock parent:
@@ -119,6 +124,36 @@ whole request (they ran thinking off). Ours, same prompts and timing, **thinking
 Their numbers are from their repository, not re-measured here. Their quant is larger (3.0 bpw, KL 0.109 vs our 0.124:
 better quality), so this compares recipes, not equal-quality builds.
 
+## What changed in `2026-10-09`
+
+Fixes only (same engine, kernels and defaults as `2026-10-07`; source: `2026-10-07` + three commits).
+
+- **Fix: all four ranks hung for good under agent traffic** (field report on `2026-10-05`, ~1 h 45 of Hermes-style
+  traffic; also the likely cause of a third-party Spark-Bench run whose last scenarios timed out). A background
+  request (e.g. a conversation-title request) cut by a foreground one, whose client left while it waited to resume,
+  handed the engine's turn back twice; a second request then entered the engine beside the first, the ranks ran
+  mismatched collectives, and the HTTP server stopped accepting. Now the turn is only given back by the request that
+  holds it, the four-rank engine never yields a running reply, and it never takes two requests at once.
+- **Sealed one-stream messages**: every message rank 0 sends the others carries a sequence number and checksum; a rank
+  out of step stops with a named error instead of running another request's message.
+- **Stall watchdog on by default** (`TF_GLM_MULTI_WATCHDOG_S`, default **900** s, `0` = off; was off): a decode round
+  or prompt chunk that stalls that long dumps every thread's stack to the rank's log and exits the rank; the other
+  ranks follow. It is re-armed every round and every prompt chunk, and disarmed while the server is idle. Keep it above
+  your longest prompt chunk (~8 s) and round; the default leaves a wide margin.
+- **Stream write timeout** (`TF_STREAM_WRITE_TIMEOUT_S`, default **120** s, `0` = off): a streaming client that stops
+  reading without closing its connection is treated as gone, instead of holding the engine.
+- **`./one-shot.sh watch`**: because ranks now exit on a stall instead of hanging, run `watch` beside an unattended
+  server. When any rank exits it saves the four logs to `logs-<time>/`, takes the server down and starts all four again
+  (`up` + `wait`); after `MAX_RESTARTS` (3) restarts within an hour it gives up and leaves the server down. Ranks are
+  never restarted one at a time: a single rank cannot rejoin the others.
+
+Set either variable with `DOCKER_ENV`, e.g. `DOCKER_ENV="-e TF_GLM_MULTI_WATCHDOG_S=1800" ./one-shot.sh up`.
+
+Verified on four Sparks at `CONTEXT=163840`: the field repro (title request cut, its client leaving while it waits,
+a second request arriving) completes both foreground replies; streamed and non-streamed client disconnects free the
+engine within one round; thinking-off prompts end in `<think></think>`; a rank frozen with `docker pause` makes the
+others exit after the watchdog (60 s in the test). Evidence: `evidence/2026-10-09/`.
+
 ## What changed in `2026-10-05`
 
 - **Prompt reuse on by default**: kept prompt states (system prompt, earlier turns, identical resends) at assistant
@@ -184,6 +219,7 @@ curl http://spark1:8890/v1/chat/completions -H 'Content-Type: application/json' 
   system prompt and history every step; reuse makes each step start in ~0.15-1 s instead of ~16 s, and 4 streams stop
   side requests from queueing. Set the agent's context to 64K or less (Hermes: `context_length: 64000`, `max_tokens:
   8192`, `compression.threshold: 0.4` keeps a conversation under 32K). For long documents use the 1M lane instead.
+- Code (image `2026-10-09`): TensorFold fork branch [`drowzeys/TensorFold:glm53-tp4-2026-10-09`](https://github.com/drowzeys/TensorFold/tree/glm53-tp4-2026-10-09) (the hang fixes on top of `2026-10-07`)
 - Code (image `2026-10-07`): TensorFold fork branch [`drowzeys/TensorFold:glm53-tp4-2026-10-07`](https://github.com/drowzeys/TensorFold/tree/glm53-tp4-2026-10-07) (DSpark + copy drafts on top of `2026-10-05`)
 - Code: TensorFold fork branch [`drowzeys/TensorFold:glm53-tp4-2026-10-05`](https://github.com/drowzeys/TensorFold/tree/glm53-tp4-2026-10-05)
   ([PR #159](https://github.com/ashhart/TensorFold/pull/159) carries the base engine). Weights:
@@ -237,7 +273,7 @@ never any swap.
 ## This repo
 
 - [AGENTS.md](AGENTS.md) — step-by-step for coding agents (and humans).
-- [one-shot.sh](one-shot.sh) — `check`, `up`, `wait`, `bench`, `down`, `logs` for the prebuilt image.
+- [one-shot.sh](one-shot.sh) — `check`, `up`, `wait`, `bench`, `watch`, `down`, `logs` for the prebuilt image.
 - [ablit/](ablit/) — Blackfrost derisk overlay of the 2.75 bpw checkpoint
   ([keys-GLM-5.3-EXL3-2.75BPW-Abliterated](https://huggingface.co/drowzeys/keys-GLM-5.3-EXL3-2.75BPW-Abliterated));
   [cluster.env](cluster.env) — this fleet's `NODES`/`MODEL`.

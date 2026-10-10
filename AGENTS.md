@@ -30,7 +30,8 @@ when a check fails. Never guess around a failure.
    the live path is the ablit overlay `/mnt/spark2-models-local/GLM-5.3-EXL3-2.75-mixedK-EXL3NE-ablit`
    (`ablit/README.md`, `cluster.env`).
 3. **Image** (once, on every node; if the pull cannot resolve `ghcr.io`, the node lost its DNS servers after a
-   reboot: `sudo resolvectl dns <default-route interface> 1.1.1.1 8.8.8.8`): `docker pull ghcr.io/drowzeys/keys-tensorfold-glm53-tp4-dgx-spark:2026-10-05`.
+   reboot: `sudo resolvectl dns <default-route interface> 1.1.1.1 8.8.8.8`): `docker pull ghcr.io/drowzeys/keys-tensorfold-glm53-tp4-dgx-spark:2026-10-09`.
+   An older tag (`2026-10-04` ... `2026-10-07`) can hang all four ranks under agent traffic: upgrade it.
 4. **Node settings** (after every reboot, on every node): `sudo node/gb10-node-settings.sh`.
 5. **Check**: `NODES=... MODEL=... ./one-shot.sh check` must end with `check: OK`. Fix each `FAIL`. Treat `WARN` lines
    as failures for a benchmark (other GPU jobs, low memory or compaction on all slow decode).
@@ -45,7 +46,9 @@ when a check fails. Never guess around a failure.
    node's free memory: under 6 GB on any node means a bad start - `down`, wait a minute, `up` again. More than ~15 % below
    that means a node is the problem: rerun `check`, look for other processes, swap (`free -g`: swap must stay ~0) or
    heat (`nvidia-smi` on every node: clocks ~2.4 GHz, under ~85 °C).
-8. **Report** the endpoint to the user: `http://<rank 0>:8890/v1`, model name `glm-5.3-tf`, OpenAI-compatible.
+8. **Unattended serving**: leave `./one-shot.sh watch` running (e.g. in `tmux`). Since `2026-10-09` a stalled rank
+   exits after `TF_GLM_MULTI_WATCHDOG_S` (900 s) instead of hanging; `watch` saves the logs and restarts all four ranks.
+9. **Report** the endpoint to the user: `http://<rank 0>:8890/v1`, model name `glm-5.3-tf`, OpenAI-compatible.
    It has no authentication: keep it on a private network.
 
 ## Options (only on the user's request)

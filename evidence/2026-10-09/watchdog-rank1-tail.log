@@ -1,0 +1,60 @@
+[tensorfold] loading glm-5.3-tf: GLM-5.3 (glm_moe_dsa) on CUDA, rank 1 of 4
+[tensorfold] RoCE one-shot reduce ready on rocep1s0f1,roceP2p1s0f1 (ranks bit-equal: True; equals the NCCL rank-order sum: True; windows of 3 and 32 rows)
+[tensorfold] rank 1: took rank 0's tiles (333 of 575 linears differed)
+[tensorfold] rank 1: tuned 8 linear shapes, 8 retiled: 6144x2048 (8, 4)->(16, 2), 6144x640 (8, 4)->(16, 8), 2048x4096 (4, 4)->(1, 8), 4096x6144 (4, 4)->(2, 8), 6144x3072 (8, 4)->(16, 4), 3072x6144 (4, 4)->(1, 8), 6144x512 (8, 4)->(16, 4), 512x6144 (1, 4)->(1, 8)
+[tensorfold] rank 1: one launch for 4 linear groups: 6144x2048 + 6144x640 [(16, 4), (32, 4)], 6144x3072 + 6144x3072 [(4, 8), (2, 8)], 2048x4096 + 2048x4096 [(8, 4), (8, 4)], 6144x512 + 6144x512 [(16, 8), (16, 8)]
+[tensorfold] rank 1: host anon 1.4 GiB after load, device free 24.1 of 121.7 GiB
+[tensorfold] GLM-5.3 rank 1/4: 333 layers loaded in 425s, context 163840 (fused, CUDA graphs; MTP drafts 2; token-level DSA past 2048)
+[tensorfold] rank 1: host anon 1.4 GiB, device free 24.1 GiB before warm-up
+[tensorfold] rank 1: 87 decode graphs captured in 23.8s (key buckets [None, 4096, 8192, 16384, 32768, 65536, 131072, 262144])
+[tensorfold] rank 1 ready in 452.8s, following rank 0
+[E1010 03:17:39.457982720 socket.cpp:1028] [c10d] The client socket has timed out after 120000ms while trying to connect to (10.100.10.1, 29562).
+[W1010 03:17:39.464383015 TCPStore.cpp:340] [c10d] TCP client failed to connect/validate to host 10.100.10.1:29562 - retrying (try=0, timeout=120000ms, delay=69460ms): The client socket has timed out after 120000ms while trying to connect to (10.100.10.1, 29562).
+Exception raised from throwTimeoutError at /__w/pytorch/pytorch/torch/csrc/distributed/c10d/socket.cpp:1030 (most recent call first):
+frame #0: c10::Error::Error(c10::SourceLocation, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >) + 0xc8 (0xfa50e027e158 in /usr/local/lib/python3.12/dist-packages/torch/lib/libc10.so)
+frame #1: c10::DistError::DistError(c10::SourceLocation, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >) + 0x78 (0xfa50e027ed48 in /usr/local/lib/python3.12/dist-packages/torch/lib/libc10.so)
+frame #2: c10::DistNetworkError::DistNetworkError(c10::SourceLocation, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >) + 0x78 (0xfa50e027f0c8 in /usr/local/lib/python3.12/dist-packages/torch/lib/libc10.so)
+frame #3: <unknown function> + 0x714cb34 (0xfa50fdc7cb34 in /usr/local/lib/python3.12/dist-packages/torch/lib/libtorch_cpu.so)
+frame #4: <unknown function> + 0x714fe4c (0xfa50fdc7fe4c in /usr/local/lib/python3.12/dist-packages/torch/lib/libtorch_cpu.so)
+frame #5: <unknown function> + 0x71501ac (0xfa50fdc801ac in /usr/local/lib/python3.12/dist-packages/torch/lib/libtorch_cpu.so)
+frame #6: <unknown function> + 0x7150710 (0xfa50fdc80710 in /usr/local/lib/python3.12/dist-packages/torch/lib/libtorch_cpu.so)
+frame #7: <unknown function> + 0x70b4a6c (0xfa50fdbe4a6c in /usr/local/lib/python3.12/dist-packages/torch/lib/libtorch_cpu.so)
+frame #8: c10d::TCPStore::TCPStore(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, c10d::TCPStoreOptions const&) + 0x30c (0xfa50fdbee88c in /usr/local/lib/python3.12/dist-packages/torch/lib/libtorch_cpu.so)
+frame #9: <unknown function> + 0x1259ff0 (0xfa5103029ff0 in /usr/local/lib/python3.12/dist-packages/torch/lib/libtorch_python.so)
+frame #10: <unknown function> + 0x627784 (0xfa51023f7784 in /usr/local/lib/python3.12/dist-packages/torch/lib/libtorch_python.so)
+frame #11: python3() [0x50332c]
+frame #12: python3() [0x4c6d08]
+<omitting python frames>
+frame #14: python3() [0x5225b8]
+frame #15: python3() [0x51db54]
+frame #16: <unknown function> + 0x625fdc (0xfa51023f5fdc in /usr/local/lib/python3.12/dist-packages/torch/lib/libtorch_python.so)
+frame #19: python3() [0x4d08f0]
+frame #20: python3() [0x5600a4]
+frame #21: python3() [0x503640]
+frame #25: python3() [0x522424]
+frame #26: python3() [0x51db54]
+frame #30: python3() [0x522424]
+frame #31: python3() [0x51db54]
+frame #35: python3() [0x55ebf8]
+frame #36: python3() [0x50332c]
+frame #39: python3() [0x68b438]
+frame #42: <unknown function> + 0x284c4 (0xfa51c65884c4 in /lib/aarch64-linux-gnu/libc.so.6)
+frame #43: __libc_start_main + 0x98 (0xfa51c6588598 in /lib/aarch64-linux-gnu/libc.so.6)
+
+/usr/local/lib/python3.12/dist-packages/triton/language/core.py:373: UserWarning: Value 32 exceeds the maximum bitwidth (32) for type 'int32'. This may result in undefined behavior.
+  warn(
+Timeout (0:01:00)!
+Thread 0x0000fa51c687f720 (most recent call first):
+  File "/opt/tensorfold/src/tensorfold/families/glm_moe_dsa/cuda/runner.py", line 596 in _sample_local
+  File "/opt/tensorfold/src/tensorfold/families/glm_moe_dsa/cuda/runner.py", line 1039 in generate
+  File "/usr/local/lib/python3.12/dist-packages/torch/utils/_contextlib.py", line 124 in decorate_context
+  File "/opt/tensorfold/src/tensorfold/families/glm_moe_dsa/cuda/engine.py", line 383 in gen
+  File "/opt/tensorfold/src/tensorfold/families/glm_moe_dsa/cuda/prefixes.py", line 575 in run
+  File "/opt/tensorfold/src/tensorfold/families/glm_moe_dsa/cuda/engine.py", line 393 in _run
+  File "/opt/tensorfold/src/tensorfold/families/glm_moe_dsa/cuda/engine.py", line 568 in follow
+  File "/opt/tensorfold/src/tensorfold/cli.py", line 297 in _serve_cuda
+  File "/opt/tensorfold/src/tensorfold/cli.py", line 388 in cmd_serve
+  File "/opt/tensorfold/src/tensorfold/cli.py", line 41 in main
+  File "/opt/tensorfold/src/tensorfold/cli.py", line 563 in <module>
+  File "<frozen runpy>", line 88 in _run_code
+  File "<frozen runpy>", line 198 in _run_module_as_main

@@ -1,0 +1,19 @@
+watching http://10.100.10.1:8890 (ctrl-c to stop watching; the server keeps running)
+23:22:06 down: rank 0 exited:1 rank 1 exited:1 rank 2 paused:0 rank 3 exited:1 - logs in logs-20261009-232206/, restarting all four
+rank 0 (10.100.10.1): rails rocep1s0f1,roceP2p1s0f1 on [10.100.10.0/24 10.100.11.0/24], GIDs 3,3
+rank 1 (10.100.10.2): rails rocep1s0f1,roceP2p1s0f1 on [10.100.10.0/24 10.100.11.0/24], GIDs 3,3
+rank 2 (10.100.10.3): rails rocep1s0f1,roceP2p1s0f1 on [10.100.10.0/24 10.100.11.0/24], GIDs 3,3
+rank 3 (10.100.10.5): rails rocep1s0f1,roceP2p1s0f1 on [10.100.10.0/24 10.100.11.0/24], GIDs 3,3
+rank 3 started on 10.100.10.5
+rank 2 started on 10.100.10.3
+rank 1 started on 10.100.10.2
+rank 0 started on 10.100.10.1
+loading (~10 min from NFS, then decode graphs are captured): ./one-shot.sh wait
+up: http://10.100.10.1:8890/v1
+  10.100.10.1: 19 GB available
+  10.100.10.2: 20 GB available
+  10.100.10.3: 20 GB available
+  10.100.10.5: 19 GB available
+23:31:33 down: rank 0 missing rank 1 missing rank 2 missing rank 3 missing - logs in logs-20261009-233133/, restarting all four
+23:31:34 2 restarts within an hour: giving up (left down)
+stopped

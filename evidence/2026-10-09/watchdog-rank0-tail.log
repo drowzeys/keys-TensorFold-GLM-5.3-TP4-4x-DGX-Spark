@@ -1,0 +1,59 @@
+[tensorfold] warning: non-loopback server has no API key; requests are open
+[tensorfold] GLM-5.3 runs on four NVIDIA GPUs with 128 GB each (four DGX Sparks): serve with --tp 4 on all four (docs/design/glm-moe-dsa-tp4.md)
+[tensorfold] loading glm-5.3-tf: GLM-5.3 (glm_moe_dsa) on CUDA, rank 0 of 4
+[tensorfold] output head: draft head q4 (128 MiB), reduced draft vocabulary q4 (27 MiB)
+[tensorfold] RoCE one-shot reduce ready on rocep1s0f1,roceP2p1s0f1 (ranks bit-equal: True; equals the NCCL rank-order sum: True; windows of 3 and 32 rows)
+[tensorfold] decode-window reductions: RoCE one-shot
+[tensorfold] rank 0: took rank 0's tiles (0 of 575 linears differed)
+[tensorfold] rank 0: tuned 8 linear shapes, 7 retiled: 6144x2048 (8, 4)->(32, 4), 6144x640 (8, 4)->(16, 4), 2048x4096 (4, 4)->(1, 8), 4096x6144 (4, 4)->(2, 8), 3072x6144 (4, 4)->(1, 8), 6144x512 (8, 4)->(4, 8), 512x6144 (1, 4)->(1, 8)
+[tensorfold] rank 0: one launch for 4 linear groups: 6144x2048 + 6144x640 [(16, 4), (32, 4)], 6144x3072 + 6144x3072 [(8, 8), (8, 8)], 2048x4096 + 2048x4096 [(8, 4), (8, 4)], 6144x512 + 6144x512 [(16, 8), (16, 8)]
+[tensorfold] L2 prefetch in decode windows (bulk, up to 8 MiB a site): a 78 sites 8.0 MiB, f 77 sites 8.0 MiB, o 78 sites 8.0 MiB
+[tensorfold] rank 0: host anon 1.4 GiB after load, device free 23.6 of 121.6 GiB
+[tensorfold] GLM-5.3 rank 0/4: 0 layers loaded in 425s, context 163840 (fused, CUDA graphs; MTP drafts 2; token-level DSA past 2048)
+[tensorfold] rank 0: host anon 1.4 GiB, device free 23.6 GiB before warm-up
+[tensorfold] rank 0: 87 decode graphs captured in 23.7s (key buckets [None, 4096, 8192, 16384, 32768, 65536, 131072, 262144])
+[tensorfold] prompt reuse on: kept prompt states up to 4.00 GiB a rank and 32 entries (TF_GLM53_CACHE_GIB / _ENTRIES), keep points every >= 1024 tokens at assistant openers; <|user|> 154827, <|assistant|> 154828, <think> 154841
+[tensorfold] serving glm-5.3-tf at http://0.0.0.0:8890/v1 on CUDA, rank 0 of 4 (sampling: temperature 1.0, top_p 0.95; drafts: on; prompts: bf16 activations; context: 163840; loaded in 452.7s)
+[tensorfold] 10.100.10.4 "GET /v1/models HTTP/1.1" 200 -
+[tensorfold] done req-665886027d96 prompt=26 cached=0 thinking=False tokens=3 sha=c241c4144a9c finish=stop tok/s=18.1 ttft=0.70s prefill=0.68s rounds=2 accepted=0/0
+[tensorfold] 10.100.10.1 "POST /v1/chat/completions HTTP/1.1" 200 -
+[tensorfold] done req-bd25a692c75d prompt=25 cached=0 thinking=True tokens=27 sha=005263f53357 finish=stop tok/s=43.1 ttft=0.22s prefill=0.20s rounds=11 accepted=0/0
+[tensorfold] 10.100.10.1 "POST /v1/chat/completions HTTP/1.1" 200 -
+[tensorfold] 10.100.10.1 "POST /tokenize HTTP/1.1" 200 -
+[tensorfold] 10.100.10.1 "POST /v1/chat/completions HTTP/1.1" 200 -
+/usr/local/lib/python3.12/dist-packages/triton/language/core.py:373: UserWarning: Value 32 exceeds the maximum bitwidth (32) for type 'int32'. This may result in undefined behavior.
+  warn(
+Timeout (0:01:00)!
+Thread 0x0000f414297a1180 (most recent call first):
+  File "/opt/tensorfold/src/tensorfold/families/glm_moe_dsa/cuda/runner.py", line 596 in _sample_local
+  File "/opt/tensorfold/src/tensorfold/families/glm_moe_dsa/cuda/runner.py", line 1039 in generate
+  File "/usr/local/lib/python3.12/dist-packages/torch/utils/_contextlib.py", line 124 in decorate_context
+  File "/opt/tensorfold/src/tensorfold/families/glm_moe_dsa/cuda/engine.py", line 383 in gen
+  File "/opt/tensorfold/src/tensorfold/families/glm_moe_dsa/cuda/prefixes.py", line 575 in run
+  File "/opt/tensorfold/src/tensorfold/families/glm_moe_dsa/cuda/engine.py", line 393 in _run
+  File "/opt/tensorfold/src/tensorfold/families/glm_moe_dsa/cuda/engine.py", line 543 in _generate_one
+  File "/opt/tensorfold/src/tensorfold/families/glm_moe_dsa/cuda/engine.py", line 509 in generate
+  File "/opt/tensorfold/src/tensorfold/cuda/server.py", line 522 in generate
+  File "/opt/tensorfold/src/tensorfold/engine/call_gate.py", line 170 in generate_gated
+  File "/opt/tensorfold/src/tensorfold/cuda/server.py", line 537 in run
+  File "/opt/tensorfold/src/tensorfold/cuda/http.py", line 183 in do_POST
+  File "/usr/lib/python3.12/http/server.py", line 424 in handle_one_request
+  File "/opt/tensorfold/src/tensorfold/server/stacks.py", line 46 in handle_one_request
+  File "/usr/lib/python3.12/http/server.py", line 436 in handle
+  File "/usr/lib/python3.12/socketserver.py", line 761 in __init__
+  File "/usr/lib/python3.12/socketserver.py", line 362 in finish_request
+  File "/usr/lib/python3.12/socketserver.py", line 692 in process_request_thread
+  File "/usr/lib/python3.12/threading.py", line 1010 in run
+  File "/usr/lib/python3.12/threading.py", line 1073 in _bootstrap_inner
+  File "/usr/lib/python3.12/threading.py", line 1030 in _bootstrap
+
+Thread 0x0000f42c4a867720 (most recent call first):
+  File "/usr/lib/python3.12/selectors.py", line 415 in select
+  File "/usr/lib/python3.12/socketserver.py", line 235 in serve_forever
+  File "/opt/tensorfold/src/tensorfold/cuda/http.py", line 298 in serve
+  File "/opt/tensorfold/src/tensorfold/cli.py", line 327 in _serve_cuda
+  File "/opt/tensorfold/src/tensorfold/cli.py", line 388 in cmd_serve
+  File "/opt/tensorfold/src/tensorfold/cli.py", line 41 in main
+  File "/opt/tensorfold/src/tensorfold/cli.py", line 563 in <module>
+  File "<frozen runpy>", line 88 in _run_code
+  File "<frozen runpy>", line 198 in _run_module_as_main
