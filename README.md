@@ -8,33 +8,7 @@ Image `ghcr.io/drowzeys/keys-tensorfold-glm53-tp4-dgx-spark:2026-10-10` (= `late
 (GLM-5.3 license), **+5 % prose / +12 % code** over MTP at 32K with thinking on ([below](#dspark-drafter-2026-10-07)).
 DFlash2 remains an optional add-on.
 
-## New 2026-10-10: mlx-serve + TensorFold 1.0.5 engine, drafter in the image
-
-A second prebuilt image serves the abliterated weights with [mlx-serve](https://github.com/ddalcu/mlx-serve) on rank 0
-and the Zig engine on [TensorFold 1.0.5](https://github.com/ashhart/TensorFold), with the DSpark ft2 drafter inside the
-image. It has its own recipe:
-**[keys-GLM-5.3-EXL3-2.75BPW-MixedK-Ablit-MLX-Serve-TF-Engine-4-DGXSparks](https://github.com/drowzeys/keys-GLM-5.3-EXL3-2.75BPW-MixedK-Ablit-MLX-Serve-TF-Engine-4-DGXSparks)**,
-image `ghcr.io/drowzeys/keys-glm53-exl3-275-ablit-tf-engine-4-dgxsparks:2026-10-10`.
-
-| That image, 32K context, 4 streams, thinking on (High effort), greedy, 512 tokens | Result |
-|---|---|
-| Prose, one stream | **38.1 tok/s** |
-| Code, one stream | **56.2 tok/s** |
-| 25K-token prompt: first time / with a changed last line (prompt reuse) | 23.2 s / **3.3 s** |
-| Load time | 350 s |
-
-It was measured at 32K context with 4 streams only; for longer context (up to 1M) use the image below. The two
-recipes' numbers come from different bench prompts and thinking effort, so do not compare them row for row.
-
-> **Upgrade from `2026-10-04` / `2026-10-04-opt` / `2026-10-05` / `2026-10-07`:** `2026-10-09` fixes a hang that
-> agent clients (title requests, cancelled requests) could trigger on all four ranks, and a stall that held the server
-> for hours. `2026-10-04` also lacks the thinking-off fix and the stop-on-disconnect fix. Pull `2026-10-09` on every
-> node and restart; nothing else changes ([what changed](#what-changed-in-2026-10-09)). `2026-10-10` is `2026-10-09`
-> plus the opt-in Zig engine below; with default settings it serves exactly as `2026-10-09` does.
-
-**Abliterated weights:** [drowzeys/keys-GLM-5.3-EXL3-2.75BPW-Abliterated](https://huggingface.co/drowzeys/keys-GLM-5.3-EXL3-2.75BPW-Abliterated)
-(gated, automatic approval after the Responsible Use form). Stock parent:
-[drowzeys/keys-GLM-5.3-EXL3-2.75BPW](https://huggingface.co/drowzeys/keys-GLM-5.3-EXL3-2.75BPW). Method: [ablit/](ablit/).
+**Weights:** [drowzeys/keys-GLM-5.3-EXL3-2.75BPW](https://huggingface.co/drowzeys/keys-GLM-5.3-EXL3-2.75BPW).
 
 ## Performance (image `2026-10-05`, thinking on)
 
@@ -64,7 +38,7 @@ background text before each request).
 
 [drowzeys/keys-GLM-5.3-speculator.dspark-ft2](https://huggingface.co/drowzeys/keys-GLM-5.3-speculator.dspark-ft2) is
 [RedHatAI/GLM-5.3-speculator.dspark](https://huggingface.co/RedHatAI/GLM-5.3-speculator.dspark) fine-tuned on 800
-thinking-on captures of the Abliterated target (held-out acceptance 3.712 -> 3.770). It is under the GLM-5.3 license
+thinking-on captures of a modified variant of the target (held-out acceptance 3.712 -> 3.770). It is under the GLM-5.3 license
 (MIT-style; keep the notice), so unlike DFlash2 it can be redistributed. It drafts **alone** (`--mtp-drafts 0`: the MTP
 layer is not loaded) with the **confidence** stop policy at 0.3 - the default cost policy, calibrated at context 0,
 drafts too deep at long context.
@@ -74,7 +48,8 @@ hf download drowzeys/keys-GLM-5.3-speculator.dspark-ft2 --local-dir /models/keys
 DSPARK=/models/keys-GLM-5.3-speculator.dspark-ft2 ./one-shot.sh up && ./one-shot.sh wait
 ```
 
-Measured in one session (image + source of `2026-10-07`, Abliterated weights, thinking on, T = 1.0, `bench/tfbench.py`):
+Measured in one session (image + source of `2026-10-07`, thinking on, T = 1.0, `bench/tfbench.py`), on a modified variant of this
+checkpoint with the same format, size and kernels, not on the stock weights:
 
 | tok/s | MTP = 2 (default) | **DSpark ft2** |
 |---|---|---|
@@ -263,8 +238,8 @@ measured cleanly and a resend fix is validated).
 sudo node/gb10-node-settings.sh
 # from any machine that can ssh to the four Sparks
 export NODES="spark1 spark2 spark3 spark4" MODEL=/models/GLM-5.3-EXL3-2.75BPW
-# abliterated: hf download drowzeys/keys-GLM-5.3-EXL3-2.75BPW-Abliterated --local-dir $MODEL
-# KeySpark live overlay: source cluster.env
+# weights (once, ~250 GB): hf download drowzeys/keys-GLM-5.3-EXL3-2.75BPW --local-dir $MODEL
+# KeySpark fleet: source cluster.env
 ./one-shot.sh check && ./one-shot.sh up && ./one-shot.sh wait && ./one-shot.sh bench
 curl http://spark1:8890/v1/chat/completions -H 'Content-Type: application/json' \
   -d '{"model": "glm-5.3-tf", "messages": [{"role": "user", "content": "Hello"}]}'
@@ -286,10 +261,7 @@ curl http://spark1:8890/v1/chat/completions -H 'Content-Type: application/json' 
 - Code: TensorFold fork branch [`drowzeys/TensorFold:glm53-tp4-2026-10-05`](https://github.com/drowzeys/TensorFold/tree/glm53-tp4-2026-10-05)
   ([PR #159](https://github.com/ashhart/TensorFold/pull/159) carries the base engine). Weights:
   [drowzeys/keys-GLM-5.3-EXL3-2.75BPW](https://huggingface.co/drowzeys/keys-GLM-5.3-EXL3-2.75BPW) (KL 0.124 nats /
-  top-1 89.6 % vs BF16). Abliterated pack:
-  [drowzeys/keys-GLM-5.3-EXL3-2.75BPW-Abliterated](https://huggingface.co/drowzeys/keys-GLM-5.3-EXL3-2.75BPW-Abliterated)
-  (Blackfrost derisk from [keys-GLM-5.3-EXL3-Abliterated](https://huggingface.co/drowzeys/keys-GLM-5.3-EXL3-Abliterated)
-  re-quantized to K5; gate **31/32** refusal, **22/22** cyber, thinking off; [ablit/](ablit/)). From source: [RECIPE.md](RECIPE.md).
+  top-1 89.6 % vs BF16). From source: [RECIPE.md](RECIPE.md).
 
 ## Reproducibility
 
@@ -336,9 +308,7 @@ never any swap.
 
 - [AGENTS.md](AGENTS.md) — step-by-step for coding agents (and humans).
 - [one-shot.sh](one-shot.sh) — `check`, `up`, `wait`, `bench`, `watch`, `down`, `logs` for the prebuilt image.
-- [ablit/](ablit/) — Blackfrost derisk overlay of the 2.75 bpw checkpoint
-  ([keys-GLM-5.3-EXL3-2.75BPW-Abliterated](https://huggingface.co/drowzeys/keys-GLM-5.3-EXL3-2.75BPW-Abliterated));
-  [cluster.env](cluster.env) — this fleet's `NODES`/`MODEL`.
+- [cluster.env](cluster.env) — this fleet's `NODES`/`MODEL`.
 - [RECIPE.md](RECIPE.md) — from source; [node/](node/) — node settings; [draft-finetune/](draft-finetune/) — own draft.
 - [bench/](bench/) — every bench behind these tables; [evidence/](evidence/) — logs and raw results by date.
 
