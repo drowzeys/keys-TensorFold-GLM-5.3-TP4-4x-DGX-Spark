@@ -8,6 +8,12 @@ Image `ghcr.io/drowzeys/keys-tensorfold-glm53-tp4-dgx-spark:2026-10-10` (= `late
 (GLM-5.3 license), **+5 % prose / +12 % code** over MTP at 32K with thinking on ([below](#dspark-drafter-2026-10-07)).
 DFlash2 remains an optional add-on.
 
+> **Upgrade from `2026-10-04` / `2026-10-04-opt` / `2026-10-05` / `2026-10-07`:** `2026-10-09` fixes a hang that
+> agent clients (title requests, cancelled requests) could trigger on all four ranks, and a stall that held the server
+> for hours. `2026-10-04` also lacks the thinking-off fix and the stop-on-disconnect fix. Pull `2026-10-09` on every
+> node and restart; nothing else changes ([what changed](#what-changed-in-2026-10-09)). `2026-10-10` is `2026-10-09`
+> plus the opt-in Zig engine below; with default settings it serves exactly as `2026-10-09` does.
+
 **Weights:** [drowzeys/keys-GLM-5.3-EXL3-2.75BPW](https://huggingface.co/drowzeys/keys-GLM-5.3-EXL3-2.75BPW).
 
 ## Performance (image `2026-10-05`, thinking on)
