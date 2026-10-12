@@ -173,8 +173,12 @@ Measured from the image as published, the stock checkpoint, four DGX Sparks, thi
   reasoning text run into the reply, as in `PRESET=1m`. Not investigated.
 - **Limits:** measured with the DSpark drafter only; `PRESET=64k`, the MTP and DFlash2 drafts were not started from
   this image. Prompts beyond 106K tokens a stream were not tried.
-- **Source:** the two-stream addition is not in the published fork branch yet; that branch is the `2026-10-12-mlx-serve`
-  engine ([below](#new-2026-10-12-mlx-serve-a-6-bit-output-head-and-a-lighter-health-check)).
+- **Source:** the TensorFold fork branch
+  [`drowzeys/TensorFold:glm53-tp4-2026-10-12-r2`](https://github.com/drowzeys/TensorFold/tree/glm53-tp4-2026-10-12-r2)
+  (commit `00c3bb11`: the two-stream addition as one commit on the `2026-10-12-mlx-serve` engine's `f156915f`;
+  `docs/glm53-dcp-streams.md` there has the design). The image's engine was built from our working commit `7765bda0`;
+  the published tree is that without the unused pruning setting, as described
+  [below](#new-2026-10-12-mlx-serve-a-6-bit-output-head-and-a-lighter-health-check). An unofficial port on a fork.
 
 ## New `2026-10-12-mlx-serve`: a 6-bit output head and a lighter health check
 
