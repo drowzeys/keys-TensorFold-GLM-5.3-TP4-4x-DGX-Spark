@@ -124,6 +124,47 @@ whole request (they ran thinking off). Ours, same prompts and timing, **thinking
 Their numbers are from their repository, not re-measured here. Their quant is larger (3.0 bpw, KL 0.109 vs our 0.124:
 better quality), so this compares recipes, not equal-quality builds.
 
+## New `2026-10-11-mlx-serve`: mlx-serve in front of the TensorFold 1.0.7 engine
+
+**Credit first:** [TensorFold](https://github.com/ashhart/TensorFold) 1.0.7 by Ash Hart and the TensorFold
+contributors is the engine, and [mlx-serve](https://github.com/ddalcu/mlx-serve) by David Dalcu is the HTTP server.
+
+A second image, `ghcr.io/drowzeys/keys-tensorfold-glm53-tp4-dgx-spark:2026-10-11-mlx-serve`, with its own launcher in
+[`mlx-serve/`](mlx-serve/). Rank 0 runs mlx-serve with our GLM-5.3 TP4 CUDA port of TensorFold 1.0.7 loaded as a
+library; ranks 1..3 follow in `tensorfold-native`. The DSpark ft2 drafter is inside the image. `latest` and
+`./one-shot.sh` in the repository root are unchanged (the Python engine).
+
+```bash
+for n in $NODES; do ssh $n docker pull ghcr.io/drowzeys/keys-tensorfold-glm53-tp4-dgx-spark:2026-10-11-mlx-serve; done
+export NODES="<four fabric addresses, rank 0 first>" MODEL=<checkpoint directory>; unset IMAGE DRAFT
+mlx-serve/one-shot.sh check && mlx-serve/one-shot.sh up     # 32,768 tokens x 4 streams
+PRESET=1m mlx-serve/one-shot.sh up                          # 1,000,000 tokens x 1 stream
+```
+
+Measured from this image on the stock checkpoint, four DGX Sparks, thinking on, greedy, 512 tokens
+(`mlx-serve/bench.py`; logs in `evidence/2026-10-11/`):
+
+| | Default (32,768 x 4) | `PRESET=1m` (1,000,000 x 1) |
+|---|---|---|
+| Prose, one stream | 37.8 tok/s | 33.4 tok/s |
+| Code, one stream | 56.2 tok/s | 47.2 tok/s |
+| 25K-token prompt, first time | 23.4 s | 62.0 s |
+| The same prompt with a changed last line | 3.3 s | 11.7 s |
+| 106K-token prompt, passphrase at half depth (`mlx-serve/needle.py`) | not run | found in 287 s; prefill 372 tok/s, decode 32.0 tok/s |
+| Load time | 352 s | 319 s |
+| Memory left on each node | 8-10 GB | 7-9 GB |
+
+- **Against TensorFold 1.0.5** (same port, same session, default shape, binaries mounted from disk): all ten benchmark
+  replies were identical and the speed was the same within noise (38.0 / 56.5 against 38.0 / 55.9 tok/s).
+- **Checks** (`HOST=<rank 0> python3 mlx-serve/checks.py`), passed in both shapes: answers stop on their own, a
+  6,000-token essay ends, clients that leave 0.05 s, 0.5 s and 3 s into a stream free the server in under 1 s, seven
+  requests on four lanes all finish, a tool call is returned as a tool call.
+- **One oddity in `PRESET=1m`:** the changed-last-line request returned the right number, but its reasoning text ran
+  into the reply (a literal `</think>` in the content). It did not happen in the default shape. Not investigated.
+- **Not measured on this image:** `PRESET=64k`, the MTP and DFlash2 drafts, and prompts beyond 106K tokens. The
+  kernel pack covers 64K x 2 for the 1.0.7 engine (222 launch shapes needed, none missing), but it was not started.
+- New in TensorFold 1.0.7 and not used by this engine: structured output and Living Weights.
+
 ## New in `2026-10-10`: the Zig engine on TensorFold 1.0.4 (opt-in, `ZIG=1`)
 
 `2026-10-10` is the `2026-10-09` image with one more directory, `/opt/tensorfold-zig`: TensorFold 1.0.4's native
@@ -316,6 +357,7 @@ never any swap.
 - [one-shot.sh](one-shot.sh) — `check`, `up`, `wait`, `bench`, `watch`, `down`, `logs` for the prebuilt image.
 - [cluster.env](cluster.env) — this fleet's `NODES`/`MODEL`.
 - [RECIPE.md](RECIPE.md) — from source; [node/](node/) — node settings; [draft-finetune/](draft-finetune/) — own draft.
+- [mlx-serve/](mlx-serve/) — launcher, bench, checks and needle test for the `2026-10-11-mlx-serve` image.
 - [bench/](bench/) — every bench behind these tables; [evidence/](evidence/) — logs and raw results by date.
 
 ## Credits
@@ -328,6 +370,8 @@ This recipe stands on other people's work. Thank you to:
   drafted decoding. And the TensorFold contributors, among them nood-co1, vcruz305, MiaAI-Lab, philip-pentatonic,
   tournierjc, mikolaj92, jschmied, shantanugoel, plotarmordev, cshintov, akol1, chadhurley25075-png, di37, gilby,
   gprot42, EugeneClaw, Chedrian07, eleqtrizit, jayleaton, kky42, feni6, taussoe, MovieMaker93 and mgoldwasser.
+- **[David Dalcu / mlx-serve](https://github.com/ddalcu/mlx-serve)** (MIT) — the HTTP server on rank 0 of the
+  `2026-10-11-mlx-serve` image: OpenAI and Anthropic endpoints, chat template, tool calls.
 - **[MiaAI-Lab / Mia's AI Lab](https://github.com/MiaAI-Lab/GLM-5.3-Flash-EXL3-2x-DGX-Sparks-TensorFold)** (Apache-2.0)
   — the GLM prompt-kernel designs our prompt experts adapt, and the patches behind most of this image's levers: 16-byte
   trellis loads (0047), fused expert epilogues (0016), L2 prefetch (0046, its kernel used unchanged), the FP8 head

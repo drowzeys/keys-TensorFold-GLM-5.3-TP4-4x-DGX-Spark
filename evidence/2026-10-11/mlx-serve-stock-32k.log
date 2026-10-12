@@ -1,0 +1,57 @@
+== image 2026-10-11-mlx-serve, stock-32k (stock keys-GLM-5.3-EXL3-2.75BPW) ==
+20:12:37 started: rank 0 on 10.100.10.1:18992, ranks 1..3 following; model /mnt/spark2-models-local/GLM-5.3-EXL3-2.75-mixedK-EXL3NE, drafter dspark , context 32768, parallel 4
+20:18:29 SERVING after 352 s: http://10.100.10.1:18992/v1 (model name: model)
+20:18:29 rank 0: 10 GB available
+20:18:29 rank 1: 10 GB available
+20:18:30 rank 2: 8 GB available
+20:18:30 rank 3: 10 GB available
+prose: 37.8 tok/s (runs 37.8, 37.7; 512 tokens; text e6274d47)
+code: 56.2 tok/s (runs 56.2, 56.1; 512 tokens; text 1ec18b50)
+== checks ==
+--- stop
+short answer: finish=stop tokens=4 0.3s loop=0.0 content=5ch think=6ch tail='Paris'
+medium answer: finish=stop tokens=115 3.0s loop=0.0 content=562ch think=66ch tail='rior, which is why the back or underside of a refrigerator feels warm.'
+max_tokens=1: finish=length tokens=1 0.1s loop=0.0 content=0ch think=1ch tail=''
+--- long
+essay 6000: finish=stop tokens=5611 128.7s loop=0.012 content=19227ch think=768ch tail='ault index structure for virtually every storage engine in production.'
+--- think
+thinking on: finish=stop tokens=146 3.9s loop=0.0 content=467ch think=43ch tail='wording already gives you the answer — the 9 sheep that stayed behind.'
+thinking code: finish=stop tokens=1075 20.6s loop=0.002 content=3970ch think=139ch tail='merge_intervals.py\n# or\npython -m unittest test_merge_intervals -v\n```'
+--- sampled
+temp 0.8 seed 1: finish=stop tokens=431 13.5s loop=0.0 content=1859ch think=83ch tail=' climbed the hundred and eight steps again that evening, just in case.'
+temp 0.8 seed 2: finish=stop tokens=433 12.2s loop=0.0 content=1924ch think=77ch tail='ne hundred and eight steps, he counted, every night, and always would.'
+--- drop
+dropped after 0.05s (479 bytes seen); next request: stop in 0.5s
+dropped after 0.5s (7126 bytes seen); next request: stop in 0.2s
+dropped after 3.0s (30404 bytes seen); next request: stop in 0.1s
+--- dropmany
+survivor 1: finish=stop tokens=207 8.2s loop=0.0 content=995ch think=36ch tail='eminds us that everything complex begins with a single, solitary unit.'
+survivor 3: finish=stop tokens=211 9.2s loop=0.0 content=976ch think=36ch tail='et profound, the number 3 embodies balance, harmony, and completeness.'
+after drops, 4 at once #0: finish=stop tokens=218 12.6s loop=0.0 content=1127ch think=73ch tail='thing has become arguably the most important something in mathematics.'
+after drops, 4 at once #1: finish=stop tokens=207 11.8s loop=0.0 content=995ch think=36ch tail='eminds us that everything complex begins with a single, solitary unit.'
+after drops, 4 at once #2: finish=stop tokens=222 12.8s loop=0.0 content=1043ch think=36ch tail='ship, balance, and the fundamental logic underlying our digital world.'
+after drops, 4 at once #3: finish=stop tokens=211 12.2s loop=0.0 content=976ch think=36ch tail='et profound, the number 3 embodies balance, harmony, and completeness.'
+--- title
+title beside dropped stream: finish=stop tokens=15 1.1s loop=0.0 content=38ch think=28ch tail='**Melting Giants: Glacier Chronicles**'
+request after: finish=stop tokens=2 0.4s loop=0.0 content=2ch think=0ch tail='ok'
+--- over
+7 at once (4 lanes) #0: finish=stop tokens=261 16.6s loop=0.0 content=816ch think=336ch tail='pon which all other colours are painted, the darkness before creation.'
+7 at once (4 lanes) #1: finish=stop tokens=288 17.4s loop=0.0 content=800ch think=506ch tail='independence, priority, and the courage to stand apart from the crowd.'
+7 at once (4 lanes) #2: finish=stop tokens=269 26.8s loop=0.0 content=847ch think=426ch tail='r hues like lavender or sea green rather than bold, aggressive shades.'
+7 at once (4 lanes) #3: finish=length tokens=300 30.5s loop=0.0 content=627ch think=783ch tail='at dusk.\n\nColour Number 3 teaches a quiet lesson: not everything needs'
+7 at once (4 lanes) #4: finish=stop tokens=269 16.2s loop=0.0 content=833ch think=437ch tail='cinating example of how numbers and hues intertwine in the human mind.'
+7 at once (4 lanes) #5: finish=stop tokens=236 13.0s loop=0.0 content=777ch think=307ch tail='satility and natural appearance make it a timeless, flattering choice.'
+7 at once (4 lanes) #6: finish=length tokens=300 29.8s loop=0.0 content=592ch think=736ch tail=' harmony and warmth, often linked to soothing blues and greens. In hex'
+--- tool
+tool call: finish=tool_calls tokens=11 0.8s loop=0.0 content=0ch think=0ch tail=''
+  tool_calls: [{"id": "call_1791764599145_0", "type": "function", "function": {"name": "get_weather", "arguments": "{\"city\":\"Paris\"}"}}]
+--- longprompt
+~25K prompt: finish=stop tokens=15 23.4s loop=0.0 content=3ch think=39ch tail='222'
+same prompt again: finish=stop tokens=16 3.3s loop=0.0 content=3ch think=36ch tail='539'
+small after long: finish=stop tokens=2 0.2s loop=0.0 content=2ch think=0ch tail='ok'
+--- done
+== memory ==
+rank 0 10.100.10.1: keys-glm53-r0 Up 11 minutes 10 GB available
+rank 1 10.100.10.2: keys-glm53-r1 Up 11 minutes 10 GB available
+rank 2 10.100.10.3: keys-glm53-r2 Up 11 minutes 8 GB available
+rank 3 10.100.10.5: keys-glm53-r3 Up 11 minutes 10 GB available
