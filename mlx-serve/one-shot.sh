@@ -5,10 +5,11 @@
 # Settings (environment, or `source cluster.env` first):
 #   NODES    the four Sparks' fabric addresses, rank 0 first (required)
 #   MODEL    the checkpoint directory, the same path on all four (required)
-#   IMAGE    [ghcr.io/drowzeys/keys-tensorfold-glm53-tp4-dgx-spark:2026-10-12-mlx-serve]
+#   IMAGE    [ghcr.io/drowzeys/keys-tensorfold-glm53-tp4-dgx-spark:2026-10-12-r2-mlx-serve]
 #   DRAFTER  dspark (the DSpark ft2 drafter in the image, default) | mtp (GLM-5.3's own MTP layer) |
 #            dflash (DRAFT=<a DFlash2 directory on all four>; CC BY-NC-ND, you download it yourself)
-#   PRESET   unset: 32,768 tokens x 4 streams | 64k: 65,536 x 2 | 1m: 1,000,000 x 1 (one request at a time)
+#   PRESET   unset: 32,768 tokens x 4 streams | 64k: 65,536 x 2 | 250k: 250,000 x 2 | 1m: 1,000,000 x 1 (one request
+#            at a time). 250k and 1m split the cache across the four Sparks.
 #   CONTEXT  PARALLEL  (default to the preset's; another shape needs its own kernel pack)
 #   PORT [18992]  RAILS [2]  MEM [110g]  RDV [29882] (rank rendezvous port)
 #   HEAD_Q   unset: the 6-bit output head when $MODEL/lm_head-6bit/lm_head-6bit.safetensors exists (about 3 % faster
@@ -18,9 +19,10 @@ set -u
 read -r -a NODES <<<"${NODES:-}"
 [ ${#NODES[@]} = 4 ] || { echo "NODES must list four fabric addresses, rank 0 first"; exit 2; }
 MODEL=${MODEL:-}; DRAFT=${DRAFT:-}; DRAFTER=${DRAFTER:-dspark}
-IMAGE=${IMAGE:-ghcr.io/drowzeys/keys-tensorfold-glm53-tp4-dgx-spark:2026-10-12-mlx-serve}
+IMAGE=${IMAGE:-ghcr.io/drowzeys/keys-tensorfold-glm53-tp4-dgx-spark:2026-10-12-r2-mlx-serve}
 PRESET=${PRESET:-}
-case "$PRESET" in "") c=32768 p=4 ;; 64k) c=65536 p=2 ;; 1m) c=1000000 p=1 ;; *) echo "PRESET=$PRESET (64k or 1m)"; exit 2 ;; esac
+case "$PRESET" in "") c=32768 p=4 ;; 64k) c=65536 p=2 ;; 250k) c=250000 p=2 ;; 1m) c=1000000 p=1 ;;
+  *) echo "PRESET=$PRESET (64k, 250k or 1m)"; exit 2 ;; esac
 CONTEXT=${CONTEXT:-$c}; PARALLEL=${PARALLEL:-$p}; PORT=${PORT:-18992}; RAILS=${RAILS:-2}; MEM=${MEM:-110g}; RDV=${RDV:-29882}
 HERE=$(cd "$(dirname "$0")" && pwd); RUN=${RUN:-$HERE/run}
 rsh() { ssh -o ConnectTimeout=10 -o BatchMode=yes "$@"; }

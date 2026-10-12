@@ -124,6 +124,58 @@ whole request (they ran thinking off). Ours, same prompts and timing, **thinking
 Their numbers are from their repository, not re-measured here. Their quant is larger (3.0 bpw, KL 0.109 vs our 0.124:
 better quality), so this compares recipes, not equal-quality builds.
 
+## New `2026-10-12-r2-mlx-serve`: two long-context streams (`PRESET=250k`)
+
+**Credit first:** [TensorFold](https://github.com/ashhart/TensorFold) 1.0.7 by Ash Hart and the TensorFold
+contributors is the engine, [mlx-serve](https://github.com/ddalcu/mlx-serve) by David Dalcu is the HTTP server,
+[exllamav3](https://github.com/turboderp-org/exllamav3) by turboderp is the EXL3 format and quantizer, and GLM-5.3 is
+[Z.ai](https://huggingface.co/zai-org)'s.
+
+`ghcr.io/drowzeys/keys-tensorfold-glm53-tp4-dgx-spark:2026-10-12-r2-mlx-serve` is the `2026-10-12-mlx-serve` image
+with one addition in our GLM-5.3 port, and `mlx-serve/one-shot.sh` now starts it by default: **two streams of
+250,000 tokens each**. Until now more than one stream meant every stream kept its whole cache on every Spark, which is
+why the shapes stopped at 32,768 x 4 and 65,536 x 2. The new preset splits the cache across the four Sparks as
+`PRESET=1m` does (decode context parallel) and gives each stream its own rows of it.
+
+```bash
+for n in $NODES; do ssh $n docker pull ghcr.io/drowzeys/keys-tensorfold-glm53-tp4-dgx-spark:2026-10-12-r2-mlx-serve; done
+export NODES="<four fabric addresses, rank 0 first>" MODEL=<checkpoint directory>; unset IMAGE DRAFT
+PRESET=250k mlx-serve/one-shot.sh up                        # 250,000 tokens x 2 streams
+```
+
+Measured from the image as published, the stock checkpoint, four DGX Sparks, thinking on, greedy, 512 tokens (logs in
+`evidence/2026-10-12-r2/`):
+
+| | `PRESET=250k` (250,000 x 2) | `PRESET=1m` (1,000,000 x 1), same image |
+|---|---|---|
+| Prose, one request | 36.0 tok/s | 36.2 tok/s |
+| Code, one request | 48.6 tok/s | 48.4 tok/s |
+| Prose, two requests at once: each / together | 23.6 and 23.6 / **47.1 tok/s** | one at a time |
+| Code, two requests at once: each / together | 35.3 and 23.9 / 47.7 tok/s | one at a time |
+| Two 106K-token prompts at once, a different passphrase at half depth in each | both found; 213,023 prompt tokens in 575 s (370 tok/s in all) | one 106K prompt: 287 s (2026-10-12) |
+| 25K-token prompt, first time / changed last line | 60.7 s / 11.7 s | 62.0 s / 11.9 s |
+| Replies with two requests at once against one at a time (8 prompts, 41 to 18,840 tokens) | 8 of 8 identical | |
+| Checks (`mlx-serve/checks.py`) | 27 replies, no errors | 27 replies, no errors |
+| Memory left on each node | 12-13 GB | 9 GB |
+| Load time | 350 s | 317 s |
+
+- **What two streams buy:** prose rose from 36 to 47 tok/s in all with two requests at once. Code did not rise
+  (48 alone, 48 together): one measurement of two different code prompts, so read it as "no gain shown", not as a rule.
+- **What it costs:** as in `PRESET=1m`, prompts are read at about 370 tok/s, about 2.5 times slower than the default
+  shape, and two prompts being read at once share that rate. One request alone decodes at the `1m` rate, not the
+  default shape's. The dense copy of the MTP layer is off (`TF_GLM53_MTP_DENSE=0`), as in `1m`.
+- **Two streams, not more.** Four streams with the cache split ran a node out of memory while loading in our tests;
+  the engine now refuses those shapes when it starts. `262,144 x 2` also served correctly from this image but left 8 GB
+  on a node against 12 GB here, so the launcher offers `250k` only (`evidence/2026-10-12-r2/mlx-serve-stock-256k-two-streams.log`).
+- **The other shapes on this image:** the default 32,768 x 4 gave 39.7 tok/s prose and 58.3 code (25K-token prompt
+  23.5 s, changed last line 3.3 s, 10-11 GB left), and `PRESET=1m` is in the table. 27 replies and no errors in each.
+- **The `</think>` oddity is in this preset too:** the changed-last-line request returned the right number with its
+  reasoning text run into the reply, as in `PRESET=1m`. Not investigated.
+- **Limits:** measured with the DSpark drafter only; `PRESET=64k`, the MTP and DFlash2 drafts were not started from
+  this image. Prompts beyond 106K tokens a stream were not tried.
+- **Source:** the two-stream addition is not in the published fork branch yet; that branch is the `2026-10-12-mlx-serve`
+  engine ([below](#new-2026-10-12-mlx-serve-a-6-bit-output-head-and-a-lighter-health-check)).
+
 ## New `2026-10-12-mlx-serve`: a 6-bit output head and a lighter health check
 
 **Credit first:** [TensorFold](https://github.com/ashhart/TensorFold) 1.0.7 by Ash Hart and the TensorFold
@@ -418,7 +470,7 @@ never any swap.
 - [one-shot.sh](one-shot.sh) — `check`, `up`, `wait`, `bench`, `watch`, `down`, `logs` for the prebuilt image.
 - [cluster.env](cluster.env) — this fleet's `NODES`/`MODEL`.
 - [RECIPE.md](RECIPE.md) — from source; [node/](node/) — node settings; [draft-finetune/](draft-finetune/) — own draft.
-- [mlx-serve/](mlx-serve/) — launcher, bench, checks and needle test for the `2026-10-12-mlx-serve` image (and `2026-10-11-mlx-serve` with `IMAGE=`).
+- [mlx-serve/](mlx-serve/) — launcher, bench, checks and needle test for the `2026-10-12-r2-mlx-serve` image (earlier `-mlx-serve` tags with `IMAGE=`).
 - [bench/](bench/) — every bench behind these tables; [evidence/](evidence/) — logs and raw results by date.
 
 ## Credits

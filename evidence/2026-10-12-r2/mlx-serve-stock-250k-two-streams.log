@@ -1,0 +1,76 @@
+== stock-250k cbench
+prose x 1: aggregate 36.1 tok/s (512 tokens in 14.2 s); per stream 36.1
+prose x 2: aggregate 47.1 tok/s (1024 tokens in 21.8 s); per stream 23.6, 23.6
+code x 1: aggregate 48.3 tok/s (512 tokens in 10.6 s); per stream 48.3
+code x 2: aggregate 47.7 tok/s (1024 tokens in 21.5 s); per stream 35.3, 23.9
+
+== stock-250k compare
+8 of 8 replies identical
+
+== stock-250k needle
+needle stream 0: prompt 106523 tokens, 575.39 s, prefill 370 tok/s, decode 38.3 tok/s, FOUND answer='quartz-heron-1000'
+needle stream 1: prompt 106500 tokens, 574.84 s, prefill 372 tok/s, decode 114375.6 tok/s, FOUND answer='amber-otter-1037'
+needle 2 streams x 5000 lines: 213023 prompt tokens in 575 s = 370 tok/s in all; ALL FOUND
+
+== stock-250k bench
+prose: 36.0 tok/s (runs 36.0, 36.0; 512 tokens; text 8c7678f3)
+code: 48.6 tok/s (runs 48.6, 48.1; 512 tokens; text 866e539c)
+
+== stock-250k checks
+--- stop
+short answer: finish=stop tokens=3 0.5s loop=0.0 content=5ch think=5ch tail='Paris'
+medium answer: finish=stop tokens=115 3.3s loop=0.0 content=562ch think=66ch tail='rior, which is why the back or underside of a refrigerator feels warm.'
+max_tokens=1: finish=length tokens=1 0.2s loop=0.0 content=0ch think=2ch tail=''
+--- long
+essay 6000: finish=length tokens=6000 154.2s loop=0.006 content=20627ch think=736ch tail=' trees.** A B-tree with t = 2 is a 2-3-4 tree; each 2-3-4 node maps to'
+--- think
+thinking on: finish=stop tokens=150 4.0s loop=0.0 content=484ch think=52ch tail='le that plays on how we parse language rather than on the math itself.'
+thinking code: finish=stop tokens=1049 21.8s loop=0.002 content=3798ch think=139ch tail='merge_intervals.py\n# or\npython -m unittest test_merge_intervals -v\n```'
+--- sampled
+temp 0.8 seed 1: finish=stop tokens=439 14.0s loop=0.0 content=1924ch think=83ch tail='was old, and so was she, and some things could not yet be handed over.'
+temp 0.8 seed 2: finish=stop tokens=437 14.2s loop=0.0 content=1950ch think=93ch tail='ns there still—constant, devoted, keeping watch over the watch itself.'
+--- drop
+dropped after 0.05s (479 bytes seen); next request: stop in 0.6s
+dropped after 0.5s (7126 bytes seen); next request: stop in 0.2s
+dropped after 3.0s (27673 bytes seen); next request: stop in 0.1s
+--- dropmany
+survivor 1: finish=stop tokens=222 10.2s loop=0.0 content=1020ch think=36ch tail='nds us that everything complex begins with a single, fundamental unit.'
+survivor 3: finish=stop tokens=210 11.4s loop=0.0 content=976ch think=36ch tail=' practical and profound, embodying balance, completeness, and harmony.'
+after drops, 4 at once #0: finish=stop tokens=218 19.2s loop=0.0 content=1165ch think=36ch tail='r science depends fundamentally on this elegant symbol of nothingness.'
+after drops, 4 at once #1: finish=stop tokens=222 9.0s loop=0.0 content=1020ch think=36ch tail='nds us that everything complex begins with a single, fundamental unit.'
+after drops, 4 at once #2: finish=stop tokens=215 19.1s loop=0.0 content=968ch think=36ch tail=' value but vast in meaning, the number 2 quietly structures our world.'
+after drops, 4 at once #3: finish=stop tokens=210 9.6s loop=0.0 content=976ch think=36ch tail=' practical and profound, embodying balance, completeness, and harmony.'
+--- title
+title beside dropped stream: finish=stop tokens=16 1.5s loop=0.0 content=34ch think=28ch tail='**Melting Giants: Ice Retreating**'
+request after: finish=stop tokens=2 0.4s loop=0.0 content=2ch think=0ch tail='ok'
+--- over
+7 at once (4 lanes) #0: finish=stop tokens=251 11.5s loop=0.0 content=803ch think=299ch tail='. It is silence made visible, the shadow that gives light its meaning.'
+7 at once (4 lanes) #1: finish=length tokens=300 44.7s loop=0.0 content=730ch think=596ch tail='ry sequence begins with this solitary figure—unaccompanied, essential,'
+7 at once (4 lanes) #2: finish=length tokens=300 13.3s loop=0.0 content=292ch think=952ch tail='airings in practical colour theory. A resistor with a red band signals'
+7 at once (4 lanes) #3: finish=length tokens=300 24.8s loop=0.0 content=838ch think=523ch tail="r golden in the mind's eye, the number 3 radiates warmth and vitality."
+7 at once (4 lanes) #4: finish=stop tokens=238 35.1s loop=0.0 content=795ch think=282ch tail='Shade 4 delivers classic elegance with dependable, flattering results.'
+7 at once (4 lanes) #5: finish=stop tokens=230 36.7s loop=0.0 content=766ch think=265ch tail='ellent base for highlights, balayage, or richer transformations later.'
+7 at once (4 lanes) #6: finish=length tokens=300 26.4s loop=0.0 content=894ch think=478ch tail='vertheless, indigo remains a beloved shade in fashion, art, and design'
+--- tool
+tool call: finish=tool_calls tokens=11 1.0s loop=0.0 content=0ch think=0ch tail=''
+  tool_calls: [{"id": "call_1791843091373_0", "type": "function", "function": {"name": "get_weather", "arguments": "{\"city\":\"Paris\"}"}}]
+--- longprompt
+~25K prompt: finish=stop tokens=15 60.7s loop=0.0 content=3ch think=39ch tail='222'
+same prompt again: finish=stop tokens=183 11.7s loop=0.449 content=339ch think=312ch tail=': sector 3 holds 539 crates. Answer number only. final 539.</think>539'
+small after long: finish=stop tokens=2 0.3s loop=0.0 content=2ch think=0ch tail='ok'
+--- done
+
+== stock-250k lowest free memory on a node: 12 GB
+== stock-250k window events
+2026-10-12 17:43:47 stock-250k: up (image default of mlx-serve, preset 250k)
+2026-10-12 17:49:46 stock-250k: rc=0 17:49:44 SERVING after 350 s: http://10.100.10.1:18992/v1 (model name: model)
+2026-10-12 17:49:46 stock-250k container: ghcr.io/drowzeys/keys-tensorfold-glm53-tp4-dgx-spark:2026-10-12-r2-mlx-serve mounts /model ; serve: 6-bit output head /model/lm_head-6bit/lm_head-6bit.safetensors
+2026-10-12 17:52:03 stock-250k streams bench: prose x 1: aggregate 36.1 tok/s (512 tokens in 14.2 s); per stream 36.1|prose x 2: aggregate 47.1 tok/s (1024 tokens in 21.8 s); per stream 23.6, 23.6|code x 1: aggregate 48.3 tok/s (512 tokens in 10.6 s); per stream 48.3|code x 2: aggregate 47.7 tok/s (1024 tokens in 21.5 s); per stream 35.3, 23.9
+2026-10-12 17:56:10 stock-250k two at once vs one at a time: 8 of 8 replies identical
+2026-10-12 18:05:45 stock-250k needle 2 streams x 5000 lines: 213023 prompt tokens in 575 s = 370 tok/s in all; ALL FOUND
+2026-10-12 18:06:35 stock-250k bench: prose: 36.0 tok/s (runs 36.0, 36.0; 512 tokens; text 8c7678f3) code: 48.6 tok/s (runs 48.6, 48.1; 512 tokens; text 866e539c)
+2026-10-12 18:12:44 stock-250k checks done (27 replies, 0 error lines)
+2026-10-12 18:12:46 stock-250k memory: lowest  12 GB in the run; now 12/13/12/12 GB
+2026-10-12 18:12:46 stock-250k PASS
+engine: info: glm53 rank 0: 2 streams x 250003 tokens, cache split over 4 ranks: 11.3 GiB of caches here, 45.5 GiB free, 34.3 GiB left after them (reserve 20.0)
+engine: info: glm53 rank 0: 2 concurrent streams (MTP drafts 2, windows up to 18 rows), 5.68 GiB of caches each (250000 tokens); draft cut 0.6 from 4 streams
