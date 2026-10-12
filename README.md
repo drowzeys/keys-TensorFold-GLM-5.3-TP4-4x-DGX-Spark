@@ -175,7 +175,15 @@ tokens (logs in `evidence/2026-10-12/`):
 - **The `PRESET=1m` oddity is still there:** the changed-last-line request returned the right number with its
   reasoning text run into the reply (a literal `</think>` in the content). Not investigated.
 - **Limits:** the 6-bit head was measured with the DSpark drafter only. `PRESET=64k`, the MTP and DFlash2 drafts were
-  not started from this image. Our port's source for this build is not published yet.
+  not started from this image.
+- **Source:** our port's source for this build is the TensorFold fork branch
+  [`drowzeys/TensorFold:glm53-tp4-2026-10-12`](https://github.com/drowzeys/TensorFold/tree/glm53-tp4-2026-10-12)
+  (commit `f156915f`, one commit on TensorFold 1.0.7; `docs/glm53-port.md` there says how to build it). The image's
+  engine was built from our working commit `a4d016d4`, which also held an experimental routed-expert pruning setting
+  that the image never switched on; the published branch is that tree without it. Built side by side, 37 of the 40
+  kernel packs are byte for byte the same; `glm53_decode` lacks the one pruning kernel, and two packs compiled with
+  line information differ by the checkout's path. An unofficial port on a fork: upstream TensorFold has not reviewed
+  or tested it.
 
 ## New `2026-10-11-mlx-serve`: mlx-serve in front of the TensorFold 1.0.7 engine
 
