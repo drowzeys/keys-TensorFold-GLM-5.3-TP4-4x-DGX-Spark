@@ -1,0 +1,20 @@
+# as-served KL against the BF16 checkpoint, stock pack, 137,490 positions: bf16 head, then the 6-bit head
+KL(reference || served) at temperature 1, 4 ranks, the reference keeps 4096 of 154880 tokens a position (KL is the lower bound, exact when all are kept)
+set            tokens         KL   KL upper    top-1     median        p90       ppl   ref ppl  tail mass
+wiki            65504   0.124420   0.137605   0.8952   0.016611   0.304518    2.9386    2.7501    9.66e-4
+code            16376   0.049642   0.054917   0.9809   0.000055   0.009415    1.1123    1.0802    4.02e-4
+math            16376   0.109363   0.115841   0.9381   0.001574   0.221446    1.6295    1.5491    4.64e-4
+chat            22501   0.179380   0.225189   0.8800   0.020205   0.256632    6.0897    6.0375    3.51e-3
+tools           16733   0.559064   0.731815   0.7997   0.028103   1.519775   15.9605   15.7513    1.38e-2
+all            137490   0.175612   0.211815   0.8964   0.008889   0.326552    3.3777    3.2319    2.81e-3
+SCORE OK 137490 positions, KL 0.175612 (upper bound 0.211815), top-1 agreement 0.8964
+
+KL(reference || served) at temperature 1, 4 ranks, the reference keeps 4096 of 154880 tokens a position (KL is the lower bound, exact when all are kept)
+set            tokens         KL   KL upper    top-1     median        p90       ppl   ref ppl  tail mass
+wiki            65504   0.124607   0.137794   0.8948   0.016690   0.304824    2.9396    2.7501    9.66e-4
+code            16376   0.049620   0.054894   0.9810   0.000056   0.009405    1.1123    1.0802    4.02e-4
+math            16376   0.109410   0.115888   0.9379   0.001564   0.224511    1.6295    1.5491    4.64e-4
+chat            22501   0.179477   0.225326   0.8794   0.020383   0.257454    6.0880    6.0375    3.51e-3
+tools           16733   0.559098   0.731935   0.7988   0.028086   1.525968   15.9508   15.7513    1.38e-2
+all            137490   0.175724   0.211945   0.8960   0.008932   0.326784    3.3778    3.2319    2.81e-3
+SCORE OK 137490 positions, KL 0.175724 (upper bound 0.211945), top-1 agreement 0.8960

@@ -1,0 +1,81 @@
+# image ghcr.io/drowzeys/keys-tensorfold-glm53-tp4-dgx-spark:2026-10-12-mlx-serve, booted as published (stock-1m)
+2026-10-12 16:17:28 stock-1m: up
+2026-10-12 16:22:54 stock-1m: 16:22:53 SERVING after 318 s: http://10.100.10.1:18992/v1 (model name: model)
+2026-10-12 16:22:55 stock-1m head: serve: 6-bit output head /model/lm_head-6bit/lm_head-6bit.safetensors
+stock-1m container: ghcr.io/drowzeys/keys-tensorfold-glm53-tp4-dgx-spark:2026-10-12-mlx-serve sha256:336caf7a3e9ab264cd75866247e0e5d963c28cfb526fd019446aa91df3161197 mounts /model 
+2026-10-12 16:23:46 stock-1m bench: prose: 36.0 tok/s (runs 36.0, 35.9; 512 tokens; text 8c7678f3) code: 48.4 tok/s (runs 48.4, 47.9; 512 tokens; text 866e539c)
+2026-10-12 16:24:36 stock-1m bench again: prose: 35.9 tok/s (runs 35.9, 35.7; 512 tokens; text 8c7678f3) code: 47.6 tok/s (runs 47.6, 47.3; 512 tokens; text 866e539c)
+2026-10-12 16:31:09 stock-1m checks done (27 replies, 0 error lines)
+2026-10-12 16:35:56 stock-1m needle 5000 lines: prompt 106360 tokens, 287.4 s, prefill 371 tok/s, decode 33.2 tok/s, FOUND answer='quartz-heron-4417'
+2026-10-12 16:35:59 stock-1m memory: 9/10/9/9 GB; min in run: 9 GB
+
+== up
+16:17:29 rank 0 (10.100.10.1): enp1s0f1np1, rails rocep1s0f1,roceP2p1s0f1 GIDs 3,3; one-shot on rocep1s0f1,roceP2p1s0f1 (GID 3)
+16:17:30 rank 1 (10.100.10.2): enp1s0f1np1, rails rocep1s0f1,roceP2p1s0f1 GIDs 3,3; one-shot on rocep1s0f1,roceP2p1s0f1 (GID 3)
+16:17:30 rank 2 (10.100.10.3): enp1s0f1np1, rails rocep1s0f1,roceP2p1s0f1 GIDs 3,3; one-shot on rocep1s0f1,roceP2p1s0f1 (GID 3)
+16:17:31 rank 3 (10.100.10.5): enp1s0f1np1, rails rocep1s0f1,roceP2p1s0f1 GIDs 3,3; one-shot on rocep1s0f1,roceP2p1s0f1 (GID 3)
+16:17:35 started: rank 0 on 10.100.10.1:18992, ranks 1..3 following; model /mnt/spark2-models-local/GLM-5.3-EXL3-2.75-mixedK-EXL3NE, drafter dspark , context 1000000, parallel 1
+16:22:53 SERVING after 318 s: http://10.100.10.1:18992/v1 (model name: model)
+16:22:53 rank 0: 10 GB available
+16:22:54 rank 1: 11 GB available
+16:22:54 rank 2: 10 GB available
+16:22:54 rank 3: 10 GB available
+16:22:54 the memory watchdog keeps running in the background; './one-shot.sh down' stops it and the ranks
+serve: 6-bit output head /model/lm_head-6bit/lm_head-6bit.safetensors
+ghcr.io/drowzeys/keys-tensorfold-glm53-tp4-dgx-spark:2026-10-12-mlx-serve sha256:336caf7a3e9ab264cd75866247e0e5d963c28cfb526fd019446aa91df3161197 mounts /model 
+== bench
+prose: 36.0 tok/s (runs 36.0, 35.9; 512 tokens; text 8c7678f3)
+code: 48.4 tok/s (runs 48.4, 47.9; 512 tokens; text 866e539c)
+== bench2
+prose: 35.9 tok/s (runs 35.9, 35.7; 512 tokens; text 8c7678f3)
+code: 47.6 tok/s (runs 47.6, 47.3; 512 tokens; text 866e539c)
+== checks
+--- stop
+short answer: finish=stop tokens=3 0.5s loop=0.0 content=5ch think=5ch tail='Paris'
+medium answer: finish=stop tokens=115 3.2s loop=0.0 content=562ch think=66ch tail='rior, which is why the back or underside of a refrigerator feels warm.'
+max_tokens=1: finish=length tokens=1 0.2s loop=0.0 content=0ch think=2ch tail=''
+--- long
+essay 6000: finish=length tokens=6000 154.9s loop=0.006 content=20627ch think=736ch tail=' trees.** A B-tree with t = 2 is a 2-3-4 tree; each 2-3-4 node maps to'
+--- think
+thinking on: finish=stop tokens=150 4.0s loop=0.0 content=484ch think=52ch tail='le that plays on how we parse language rather than on the math itself.'
+thinking code: finish=stop tokens=1049 21.8s loop=0.002 content=3798ch think=139ch tail='merge_intervals.py\n# or\npython -m unittest test_merge_intervals -v\n```'
+--- sampled
+temp 0.8 seed 1: finish=stop tokens=439 14.0s loop=0.0 content=1924ch think=83ch tail='was old, and so was she, and some things could not yet be handed over.'
+temp 0.8 seed 2: finish=stop tokens=437 14.2s loop=0.0 content=1950ch think=93ch tail='ns there still—constant, devoted, keeping watch over the watch itself.'
+--- drop
+dropped after 0.05s (479 bytes seen); next request: stop in 0.7s
+dropped after 0.5s (6169 bytes seen); next request: stop in 0.3s
+dropped after 3.0s (27214 bytes seen); next request: stop in 0.2s
+--- dropmany
+survivor 1: finish=stop tokens=222 7.6s loop=0.0 content=1020ch think=36ch tail='nds us that everything complex begins with a single, fundamental unit.'
+survivor 3: finish=stop tokens=210 14.4s loop=0.0 content=976ch think=36ch tail=' practical and profound, embodying balance, completeness, and harmony.'
+after drops, 4 at once #0: finish=stop tokens=218 12.8s loop=0.0 content=1165ch think=36ch tail='r science depends fundamentally on this elegant symbol of nothingness.'
+after drops, 4 at once #1: finish=stop tokens=222 6.2s loop=0.0 content=1020ch think=36ch tail='nds us that everything complex begins with a single, fundamental unit.'
+after drops, 4 at once #2: finish=stop tokens=215 25.7s loop=0.0 content=968ch think=36ch tail=' value but vast in meaning, the number 2 quietly structures our world.'
+after drops, 4 at once #3: finish=stop tokens=210 19.1s loop=0.0 content=976ch think=36ch tail=' practical and profound, embodying balance, completeness, and harmony.'
+--- title
+title beside dropped stream: finish=stop tokens=16 3.0s loop=0.0 content=34ch think=28ch tail='**Melting Giants: Ice Retreating**'
+request after: finish=stop tokens=2 0.1s loop=0.0 content=2ch think=0ch tail='ok'
+--- over
+7 at once (4 lanes) #0: finish=stop tokens=251 7.5s loop=0.0 content=803ch think=299ch tail='. It is silence made visible, the shadow that gives light its meaning.'
+7 at once (4 lanes) #1: finish=length tokens=300 16.7s loop=0.0 content=730ch think=596ch tail='ry sequence begins with this solitary figure—unaccompanied, essential,'
+7 at once (4 lanes) #2: finish=length tokens=300 32.5s loop=0.0 content=292ch think=952ch tail='airings in practical colour theory. A resistor with a red band signals'
+7 at once (4 lanes) #3: finish=length tokens=300 49.9s loop=0.0 content=838ch think=523ch tail="r golden in the mind's eye, the number 3 radiates warmth and vitality."
+7 at once (4 lanes) #4: finish=stop tokens=238 23.6s loop=0.0 content=795ch think=282ch tail='Shade 4 delivers classic elegance with dependable, flattering results.'
+7 at once (4 lanes) #5: finish=stop tokens=230 56.8s loop=0.0 content=766ch think=265ch tail='ellent base for highlights, balayage, or richer transformations later.'
+7 at once (4 lanes) #6: finish=length tokens=300 41.1s loop=0.0 content=894ch think=478ch tail='vertheless, indigo remains a beloved shade in fashion, art, and design'
+--- tool
+tool call: finish=tool_calls tokens=11 1.0s loop=0.0 content=0ch think=0ch tail=''
+  tool_calls: [{"id": "call_1791836994888_0", "type": "function", "function": {"name": "get_weather", "arguments": "{\"city\":\"Paris\"}"}}]
+--- longprompt
+~25K prompt: finish=stop tokens=15 62.2s loop=0.0 content=3ch think=39ch tail='222'
+same prompt again: finish=stop tokens=183 11.7s loop=0.449 content=339ch think=312ch tail=': sector 3 holds 539 crates. Answer number only. final 539.</think>539'
+small after long: finish=stop tokens=2 0.1s loop=0.0 content=2ch think=0ch tail='ok'
+--- done
+== needle
+needle 5000 lines: prompt 106360 tokens, 287.4 s, prefill 371 tok/s, decode 33.2 tok/s, FOUND answer='quartz-heron-4417'
+== mem
+rank 0 10.100.10.1: keys-glm53-r0 Up 18 minutes 9 GB available
+rank 1 10.100.10.2: keys-glm53-r1 Up 18 minutes 10 GB available
+rank 2 10.100.10.3: keys-glm53-r2 Up 18 minutes 9 GB available
+rank 3 10.100.10.5: keys-glm53-r3 Up 18 minutes 9 GB available

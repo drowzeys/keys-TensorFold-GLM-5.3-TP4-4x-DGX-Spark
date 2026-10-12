@@ -124,6 +124,59 @@ whole request (they ran thinking off). Ours, same prompts and timing, **thinking
 Their numbers are from their repository, not re-measured here. Their quant is larger (3.0 bpw, KL 0.109 vs our 0.124:
 better quality), so this compares recipes, not equal-quality builds.
 
+## New `2026-10-12-mlx-serve`: a 6-bit output head and a lighter health check
+
+**Credit first:** [TensorFold](https://github.com/ashhart/TensorFold) 1.0.7 by Ash Hart and the TensorFold
+contributors is the engine, [mlx-serve](https://github.com/ddalcu/mlx-serve) by David Dalcu is the HTTP server,
+[exllamav3](https://github.com/turboderp-org/exllamav3) by turboderp is the EXL3 format and quantizer, and GLM-5.3 is
+[Z.ai](https://huggingface.co/zai-org)'s.
+
+`ghcr.io/drowzeys/keys-tensorfold-glm53-tp4-dgx-spark:2026-10-12-mlx-serve` is the `2026-10-11-mlx-serve` image with
+two changes in our GLM-5.3 port, and `mlx-serve/one-shot.sh` now starts it by default:
+
+| Change | Effect |
+|---|---|
+| The output head is read as a 6-bit EXL3 linear when the checkpoint has one (`lm_head-6bit/lm_head-6bit.safetensors`, 714 MB, now in the [weights repository](https://huggingface.co/drowzeys/keys-GLM-5.3-EXL3-2.75BPW)) | A head launch takes 0.79 ms on a Spark against 2.16 ms for the bf16 head. As-served KL against the BF16 checkpoint goes from 0.175612 to 0.175724 over 137,490 positions (tool calls 0.559064 to 0.559098; top-1 agreement 89.64% to 89.60%). Some greedy replies differ |
+| The per-window health check no longer does its own all-gather (`TF_GLM53_ROCE_HEALTH_LOCAL=1`) | Replies identical to the previous build; about 1% faster |
+
+```bash
+hf download drowzeys/keys-GLM-5.3-EXL3-2.75BPW --include "lm_head-6bit/*" --local-dir $MODEL    # once, if you already have the checkpoint
+for n in $NODES; do ssh $n docker pull ghcr.io/drowzeys/keys-tensorfold-glm53-tp4-dgx-spark:2026-10-12-mlx-serve; done
+export NODES="<four fabric addresses, rank 0 first>" MODEL=<checkpoint directory>; unset IMAGE DRAFT
+mlx-serve/one-shot.sh check && mlx-serve/one-shot.sh up     # 32,768 tokens x 4 streams
+PRESET=1m mlx-serve/one-shot.sh up                          # 1,000,000 tokens x 1 stream
+HEAD_Q=off mlx-serve/one-shot.sh up                         # the bf16 head, as before
+```
+
+Without the head file the image logs `no /model/lm_head-6bit/lm_head-6bit.safetensors: bf16 output head` and serves
+with the bf16 head.
+
+Measured from each image as published, same day, the stock checkpoint, four DGX Sparks, thinking on, greedy, 512
+tokens (logs in `evidence/2026-10-12/`):
+
+| | `2026-10-11-mlx-serve` | `2026-10-12-mlx-serve` |
+|---|---|---|
+| Prose, one stream, 32,768 x 4 | 37.5 tok/s | **39.6 tok/s** |
+| Code, one stream, 32,768 x 4 | 55.8 tok/s | **57.8 tok/s** |
+| Prose, all streams together: 1 / 2 / 4 at once | 36.8 / 51.6 / 66.6 tok/s | 38.6 / 53.6 / 68.5 tok/s |
+| Code, all streams together: 1 / 2 / 4 at once | 54.1 / 60.5 / 77.4 tok/s | 55.8 / 62.5 / 80.5 tok/s |
+| Prefill, 2K / 25K-token prompt | 918 / 999 tok/s | 917 / 982 tok/s |
+| Prose, `PRESET=1m` | 33.1 tok/s | 36.0 tok/s |
+| Code, `PRESET=1m` | 46.7 tok/s | 48.4 tok/s |
+| 25K-token prompt, first time, default / `PRESET=1m` | 23.4 s / 62.0 s (10-11) | 23.8 s / 62.2 s |
+| 106K-token prompt, passphrase at half depth, `PRESET=1m` | found in 287 s (10-11) | found in 287 s; prefill 371 tok/s |
+| Memory left on each node, default / `PRESET=1m` | 8-10 GB / 7-9 GB | 10-11 GB / 9-10 GB |
+
+- **How to read the stream rows:** the one-stream rows above them are the server's own decode rate; the stream rows
+  are every stream's tokens over the wall time of the batch, so one stream alone reads a little lower there.
+- **The `PRESET=1m` gain is larger than the head explains.** Speeds on this cluster vary by several percent from one
+  load to the next, and each shape was loaded once per image.
+- **Checks** (`mlx-serve/checks.py`): 27 replies and no errors in both shapes.
+- **The `PRESET=1m` oddity is still there:** the changed-last-line request returned the right number with its
+  reasoning text run into the reply (a literal `</think>` in the content). Not investigated.
+- **Limits:** the 6-bit head was measured with the DSpark drafter only. `PRESET=64k`, the MTP and DFlash2 drafts were
+  not started from this image. Our port's source for this build is not published yet.
+
 ## New `2026-10-11-mlx-serve`: mlx-serve in front of the TensorFold 1.0.7 engine
 
 **Credit first:** [TensorFold](https://github.com/ashhart/TensorFold) 1.0.7 by Ash Hart and the TensorFold
@@ -357,7 +410,7 @@ never any swap.
 - [one-shot.sh](one-shot.sh) — `check`, `up`, `wait`, `bench`, `watch`, `down`, `logs` for the prebuilt image.
 - [cluster.env](cluster.env) — this fleet's `NODES`/`MODEL`.
 - [RECIPE.md](RECIPE.md) — from source; [node/](node/) — node settings; [draft-finetune/](draft-finetune/) — own draft.
-- [mlx-serve/](mlx-serve/) — launcher, bench, checks and needle test for the `2026-10-11-mlx-serve` image.
+- [mlx-serve/](mlx-serve/) — launcher, bench, checks and needle test for the `2026-10-12-mlx-serve` image (and `2026-10-11-mlx-serve` with `IMAGE=`).
 - [bench/](bench/) — every bench behind these tables; [evidence/](evidence/) — logs and raw results by date.
 
 ## Credits

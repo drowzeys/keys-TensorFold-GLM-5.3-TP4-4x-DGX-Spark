@@ -1,0 +1,27 @@
+# image 2026-10-12-mlx-serve, 32,768 x 4: speed, prefill and concurrent streams (thinking on, greedy, 512 tokens a stream)
+decode prose: 39.4 tok/s (runs 39.4, 39.4; 512 tokens)
+ttft prose: 0.01 s (runs 0.24, 0.01)
+decode code: 58.1 tok/s (runs 58.1, 57.7; 512 tokens)
+ttft code: 0.01 s (runs 0.25, 0.01)
+prefill ~2000: 2038 prompt tokens (cached 0), 917 tok/s by the server, 2.5 s wall (829 tok/s wall)
+prefill ~25000: 24836 prompt tokens (cached 0), 982 tok/s by the server, 25.6 s wall (972 tok/s wall)
+conc 1 x prose: per stream 38.6 tok/s (mean 38.6; server decode 39.2); aggregate 38.6 tok/s over 13.3 s
+conc 1 x code: per stream 55.8 tok/s (mean 55.8; server decode 57.7); aggregate 55.8 tok/s over 9.2 s
+conc 2 x prose: per stream 26.8, 27.9 tok/s (mean 27.3; server decode 27.3, 28.4); aggregate 53.6 tok/s over 19.1 s
+conc 2 x code: per stream 41.6, 31.3 tok/s (mean 36.4; server decode 42.9, 31.9); aggregate 62.5 tok/s over 16.4 s
+conc 4 x prose: per stream 17.7, 18.1, 19.1, 17.1 tok/s (mean 18.0; server decode 18.2, 18.6, 19.6, 17.6); aggregate 68.5 tok/s over 29.9 s
+conc 4 x code: per stream 23.5, 20.1, 23.2, 23.3 tok/s (mean 22.5; server decode 24.9, 21.2, 24.5, 24.8); aggregate 80.5 tok/s over 25.4 s
+
+# the 2026-10-11-mlx-serve image, same day, same script
+decode prose: 37.5 tok/s (runs 37.5, 37.2; 512 tokens)
+ttft prose: 0.01 s (runs 0.21, 0.01)
+decode code: 55.8 tok/s (runs 55.4, 55.8; 512 tokens)
+ttft code: 0.01 s (runs 0.25, 0.01)
+prefill ~2000: 2027 prompt tokens (cached 0), 918 tok/s by the server, 2.5 s wall (822 tok/s wall)
+prefill ~25000: 24834 prompt tokens (cached 0), 999 tok/s by the server, 25.1 s wall (988 tok/s wall)
+conc 1 x prose: per stream 36.8 tok/s (mean 36.8; server decode 37.3); aggregate 36.8 tok/s over 13.9 s
+conc 1 x code: per stream 54.2 tok/s (mean 54.2; server decode 55.8); aggregate 54.1 tok/s over 9.5 s
+conc 2 x prose: per stream 25.8, 27.0 tok/s (mean 26.4; server decode 26.3, 27.5); aggregate 51.6 tok/s over 19.8 s
+conc 2 x code: per stream 38.3, 30.2 tok/s (mean 34.3; server decode 39.4, 30.7); aggregate 60.5 tok/s over 16.9 s
+conc 4 x prose: per stream 17.1, 17.7, 18.5, 16.7 tok/s (mean 17.5; server decode 17.6, 18.2, 19.1, 17.1); aggregate 66.6 tok/s over 30.7 s
+conc 4 x code: per stream 23.2, 19.4, 23.0, 20.3 tok/s (mean 21.5; server decode 24.6, 20.3, 24.4, 21.5); aggregate 77.4 tok/s over 26.4 s
