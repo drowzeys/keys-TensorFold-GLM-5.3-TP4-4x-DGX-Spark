@@ -1,0 +1,21 @@
+2026-10-12 19:43:26 window start
+2026-10-12 19:43:31 public-check directory on .2: 89 entries
+2026-10-12 19:43:32 anonymous pull by digest on .5: rc=0 ghcr.io/drowzeys/keys-tensorfold-glm53-tp4-dgx-spark@sha256:6290c15f1596347468fa63c35f9e5e
+2026-10-12 19:49:41 install.sh rc=0 in 369 s: check: OK
+2026-10-12 19:49:41 weights: WEIGHTS OK 91 files, 277.0 GB, sha256 checked
+2026-10-12 19:55:41 image: SERVING after 352 s: http://10.100.10.1:18992/v1 (model name: model) (wall 360 s)
+2026-10-12 19:55:42 image container: ghcr.io/drowzeys/keys-tensorfold-glm53-tp4-dgx-spark:2026-10-12-r2-mlx-serve /mnt/spark2-models-local/glm53-public-check->/model 
+2026-10-12 19:56:26 image bench rc=0: prose: 39.7 tok/s (runs 39.7, 39.3; 512 tokens; text 97e9e2bf) code: 58.0 tok/s (runs 58.0, 57.8; 512 tokens; text 1ec18b50)
+2026-10-12 19:57:10 image bench again: prose: 39.4 tok/s (runs 39.4, 39.3; 512 tokens; text 97e9e2bf) code: 57.8 tok/s (runs 57.7, 57.8; 512 tokens; text 1ec18b50)
+2026-10-12 20:01:37 image checks rc=0: 42 lines, 0 error lines
+2026-10-12 20:01:37 image memory: lowest 10 GB
+2026-10-12 20:01:40 image: down
+2026-10-12 20:05:44 build-engine.sh rc=0 in 229 s: build-engine: OK. Start with: ENGINE=source mlx-serve/one-shot.sh up
+2026-10-12 20:11:45 source: engine: built from source (00c3bb11), mounted over the image's;SERVING after 351 s: http://10.100.10.1:18992/v1 (model name: model) (wall 361 s)
+2026-10-12 20:11:45 source container: ghcr.io/drowzeys/keys-tensorfold-glm53-tp4-dgx-spark:2026-10-12-r2-mlx-serve /home/keyspark/.local/share/keys-glm53/engine/zig-out->/opt/keys-glm53/zig-out /mnt/spark2-models-local/glm53-public-check->/model 
+2026-10-12 20:12:29 source bench rc=0: prose: 39.6 tok/s (runs 39.6, 39.2; 512 tokens; text 97e9e2bf) code: 57.5 tok/s (runs 57.4, 57.5; 512 tokens; text 1ec18b50)
+2026-10-12 20:13:13 source bench again: prose: 39.2 tok/s (runs 39.1, 39.2; 512 tokens; text 97e9e2bf) code: 57.7 tok/s (runs 57.6, 57.7; 512 tokens; text 1ec18b50)
+2026-10-12 20:17:40 source checks rc=0: 42 lines, 0 error lines
+2026-10-12 20:17:40 source memory: lowest 10 GB
+2026-10-12 20:17:43 source: down
+2026-10-12 20:17:58 replies image vs source: identical

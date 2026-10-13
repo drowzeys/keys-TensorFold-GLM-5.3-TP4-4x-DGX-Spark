@@ -1,0 +1,5 @@
+== 10.100.10.1: tensorfold-native 1.0.7 16119304 /home/keyspark/.local/share/keys-glm53/engine/zig-out/lib/libtensorfold_glm53.so 37095928 /home/keyspark/.local/share/keys-glm53/engine/zig-out/native/bin/tensorfold-native 
+== 10.100.10.2: tensorfold-native 1.0.7 16075104 /home/keyspark/.local/share/keys-glm53/engine/zig-out/lib/libtensorfold_glm53.so 37181280 /home/keyspark/.local/share/keys-glm53/engine/zig-out/native/bin/tensorfold-native 
+== 10.100.10.3: tensorfold-native 1.0.7 16075104 /home/keyspark/.local/share/keys-glm53/engine/zig-out/lib/libtensorfold_glm53.so 37095928 /home/keyspark/.local/share/keys-glm53/engine/zig-out/native/bin/tensorfold-native 
+== 10.100.10.5: tensorfold-native 1.0.7 16119304 /home/keyspark/.local/share/keys-glm53/engine/zig-out/lib/libtensorfold_glm53.so 37095920 /home/keyspark/.local/share/keys-glm53/engine/zig-out/native/bin/tensorfold-native 
+build-engine: OK. Start with: ENGINE=source mlx-serve/one-shot.sh up

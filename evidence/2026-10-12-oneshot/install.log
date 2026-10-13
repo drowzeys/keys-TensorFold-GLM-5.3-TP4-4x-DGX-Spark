@@ -1,0 +1,31 @@
+==> 1/5 the four Sparks
+  rank 0 (10.100.10.1): home=/home/keyspark gpu=NVIDIA_GB10 arch=aarch64 mem_gb=121 docker=ok gpu_in_docker=ok rdma=ok sudo=ok tools=ok 
+  rank 1 (10.100.10.2): home=/home/keyspark gpu=NVIDIA_GB10 arch=aarch64 mem_gb=121 docker=ok gpu_in_docker=ok rdma=ok sudo=ok tools=ok 
+  rank 2 (10.100.10.3): home=/home/keyspark gpu=NVIDIA_GB10 arch=aarch64 mem_gb=121 docker=ok gpu_in_docker=ok rdma=ok sudo=ok tools=ok 
+  rank 3 (10.100.10.5): home=/home/keyspark gpu=NVIDIA_GB10 arch=aarch64 mem_gb=121 docker=ok gpu_in_docker=ok rdma=ok sudo=ok tools=ok 
+==> 2/5 kernel settings (vm.compaction_proactiveness=0, vm.swappiness=1; until the next reboot)
+  10.100.10.1: set
+  10.100.10.2: set
+  10.100.10.3: set
+  10.100.10.5: set
+==> 3/5 image ghcr.io/drowzeys/keys-tensorfold-glm53-tp4-dgx-spark:2026-10-12-r2-mlx-serve
+  10.100.10.1: sha256:6290c15f1596347468fa63c35f9e5ebc37212294fd283fc1c7165fddbcb9b34d
+  10.100.10.2: sha256:6290c15f1596347468fa63c35f9e5ebc37212294fd283fc1c7165fddbcb9b34d
+  10.100.10.3: sha256:6290c15f1596347468fa63c35f9e5ebc37212294fd283fc1c7165fddbcb9b34d
+  10.100.10.5: sha256:6290c15f1596347468fa63c35f9e5ebc37212294fd283fc1c7165fddbcb9b34d
+==> 4/5 weights drowzeys/keys-GLM-5.3-EXL3-2.75BPW -> /mnt/spark2-models-local/glm53-public-check (shared: 10.100.10.2 downloads)
+  downloading on 1 Spark(s); progress: tail -f mlx-serve/run-install/weights-<address>.log
+  10.100.10.2: 38/91 model-00058-of-00080.safetensors  45.8 of 277.0 GB
+  10.100.10.2: 54/91 model-00029-of-00080.safetensors  90.3 of 277.0 GB
+  10.100.10.2: 63/91 model-00057-of-00080.safetensors  135.3 of 277.0 GB
+  10.100.10.2: 73/91 model-00005-of-00080.safetensors  185.3 of 277.0 GB
+  10.100.10.2: 82/91 model-00041-of-00080.safetensors  230.4 of 277.0 GB
+  10.100.10.2: WEIGHTS OK 91 files, 277.0 GB, sha256 checked
+==> 5/5 mlx-serve/my-cluster.env and the start check
+rank 0 (10.100.10.1): image=ok model=ok compaction=0 swappiness=1 sudo=ok swap_used_gb=0 memfree_gb=116 gpu_procs=0 
+rank 1 (10.100.10.2): image=ok model=ok compaction=0 swappiness=1 sudo=ok swap_used_gb=0 memfree_gb=116 gpu_procs=0 
+rank 2 (10.100.10.3): image=ok model=ok compaction=0 swappiness=1 sudo=ok swap_used_gb=2 memfree_gb=115 gpu_procs=0 
+rank 3 (10.100.10.5): image=ok model=ok compaction=0 swappiness=1 sudo=ok swap_used_gb=0 memfree_gb=116 gpu_procs=0 
+check: OK
+READY. Start: mlx-serve/one-shot.sh up    (32,768 tokens x 4 streams; PRESET=250k for 250,000 x 2, PRESET=1m for 1,000,000 x 1)
+       Then:  mlx-serve/one-shot.sh bench  |  HOST=10.100.10.1 python3 mlx-serve/checks.py  |  mlx-serve/one-shot.sh down

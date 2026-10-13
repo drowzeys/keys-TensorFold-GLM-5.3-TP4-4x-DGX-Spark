@@ -1,0 +1,42 @@
+--- stop
+short answer: finish=stop tokens=4 0.3s loop=0.0 content=5ch think=6ch tail='Paris'
+medium answer: finish=stop tokens=115 2.8s loop=0.0 content=562ch think=66ch tail='rior, which is why the back or underside of a refrigerator feels warm.'
+max_tokens=1: finish=length tokens=1 0.1s loop=0.0 content=0ch think=1ch tail=''
+--- long
+essay 6000: finish=length tokens=6000 131.1s loop=0.013 content=20754ch think=768ch tail='t n) | Descend via child ranges |\n| Insert | O(log_t n) | O(t log_t n)'
+--- think
+thinking on: finish=stop tokens=146 3.6s loop=0.0 content=467ch think=43ch tail='wording already gives you the answer — the 9 sheep that stayed behind.'
+thinking code: finish=stop tokens=1051 18.6s loop=0.002 content=3819ch think=139ch tail='merge_intervals.py\n# or\npython -m unittest test_merge_intervals -v\n```'
+--- sampled
+temp 0.8 seed 1: finish=stop tokens=449 12.3s loop=0.0 content=1939ch think=83ch tail='ng, faithful in its mechanical way.\n\nBut it would never *watch* again.'
+temp 0.8 seed 2: finish=stop tokens=441 11.9s loop=0.0 content=1982ch think=77ch tail=' automated—but they never replaced her name on the plaque by the door.'
+--- drop
+dropped after 0.05s (479 bytes seen); next request: stop in 0.5s
+dropped after 0.5s (6880 bytes seen); next request: stop in 0.1s
+dropped after 3.0s (31996 bytes seen); next request: stop in 0.1s
+--- dropmany
+survivor 1: finish=stop tokens=211 8.4s loop=0.0 content=1022ch think=36ch tail='1 proves that beginnings, however small, contain infinite possibility.'
+survivor 3: finish=stop tokens=209 9.0s loop=0.0 content=1016ch think=36ch tail='omething fundamental about how humans perceive and organize the world.'
+after drops, 4 at once #0: finish=stop tokens=215 12.2s loop=0.0 content=1112ch think=36ch tail='othing has enabled humanity to understand and build nearly everything.'
+after drops, 4 at once #1: finish=stop tokens=211 11.8s loop=0.0 content=1022ch think=36ch tail='1 proves that beginnings, however small, contain infinite possibility.'
+after drops, 4 at once #2: finish=stop tokens=230 12.4s loop=0.0 content=1059ch think=36ch tail='bodies balance, partnership, and the essential structure of our world.'
+after drops, 4 at once #3: finish=stop tokens=209 12.3s loop=0.0 content=1016ch think=36ch tail='omething fundamental about how humans perceive and organize the world.'
+--- title
+title beside dropped stream: finish=stop tokens=13 1.0s loop=0.0 content=27ch think=28ch tail='**Frozen Giants in Motion**'
+request after: finish=stop tokens=2 0.4s loop=0.0 content=2ch think=0ch tail='ok'
+--- over
+7 at once (4 lanes) #0: finish=stop tokens=246 15.4s loop=0.0 content=738ch think=396ch tail='f the infinite potential contained within perfect, complete emptiness.'
+7 at once (4 lanes) #1: finish=stop tokens=284 16.9s loop=0.0 content=793ch think=506ch tail='ll others, because one always comes first, and first is unforgettable.'
+7 at once (4 lanes) #2: finish=length tokens=300 17.4s loop=0.0 content=747ch think=666ch tail='any hue the designer chooses. Ultimately, the colour of two depends on'
+7 at once (4 lanes) #3: finish=length tokens=300 19.0s loop=0.0 content=520ch think=839ch tail=' which is confident and golden, or Number 4, which is bold and orange.'
+7 at once (4 lanes) #4: finish=stop tokens=265 29.8s loop=0.0 content=822ch think=437ch tail='ves that even abstract mathematics can wear a vivid, memorable colour.'
+7 at once (4 lanes) #5: finish=stop tokens=236 28.0s loop=0.0 content=777ch think=307ch tail='satility and natural appearance make it a timeless, flattering choice.'
+7 at once (4 lanes) #6: finish=length tokens=300 29.3s loop=0.0 content=592ch think=736ch tail=' harmony and warmth, often linked to soothing blues and greens. In hex'
+--- tool
+tool call: finish=tool_calls tokens=11 0.8s loop=0.0 content=0ch think=0ch tail=''
+  tool_calls: [{"id": "call_1791850633440_0", "type": "function", "function": {"name": "get_weather", "arguments": "{\"city\":\"Paris\"}"}}]
+--- longprompt
+~25K prompt: finish=stop tokens=15 23.3s loop=0.0 content=3ch think=39ch tail='222'
+same prompt again: finish=stop tokens=16 3.3s loop=0.0 content=3ch think=36ch tail='539'
+small after long: finish=stop tokens=2 0.2s loop=0.0 content=2ch think=0ch tail='ok'
+--- done

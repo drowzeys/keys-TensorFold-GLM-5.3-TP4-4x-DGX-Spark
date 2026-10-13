@@ -16,6 +16,10 @@ DFlash2 remains an optional add-on.
 
 **Weights:** [drowzeys/keys-GLM-5.3-EXL3-2.75BPW](https://huggingface.co/drowzeys/keys-GLM-5.3-EXL3-2.75BPW).
 
+**New to this? Start at [One-shot install](#one-shot-install-from-four-bare-sparks-to-serving):** one script checks
+the four Sparks, pulls the image, downloads the weights and writes the settings; the engine can also be built from its
+published source.
+
 ## Performance (image `2026-10-05`, thinking on)
 
 Four DGX Sparks, the published image through `one-shot.sh`, default settings, **thinking on** (GLM-5.3 is a reasoning
@@ -123,6 +127,88 @@ whole request (they ran thinking off). Ours, same prompts and timing, **thinking
 
 Their numbers are from their repository, not re-measured here. Their quant is larger (3.0 bpw, KL 0.109 vs our 0.124:
 better quality), so this compares recipes, not equal-quality builds.
+
+## One-shot install: from four bare Sparks to serving
+
+**Credit first:** [TensorFold](https://github.com/ashhart/TensorFold) 1.0.7 by Ash Hart and the TensorFold
+contributors is the engine, [mlx-serve](https://github.com/ddalcu/mlx-serve) by David Dalcu is the HTTP server,
+[exllamav3](https://github.com/turboderp-org/exllamav3) by turboderp is the EXL3 format and quantizer, and GLM-5.3 is
+[Z.ai](https://huggingface.co/zai-org)'s.
+
+Everything a new cluster needs comes from public places with no login: the image (GHCR), the weights and the 6-bit
+output head (Hugging Face), and the engine's source (a TensorFold fork branch). From any machine with key-based ssh to
+the four Sparks, which can be one of them:
+
+```bash
+git clone https://github.com/drowzeys/keys-TensorFold-GLM-5.3-TP4-4x-DGX-Spark && cd keys-TensorFold-GLM-5.3-TP4-4x-DGX-Spark
+mlx-serve/install.sh <spark1> <spark2> <spark3> <spark4>   # the four fabric (RoCE) addresses, rank 0 first
+mlx-serve/one-shot.sh up                                   # about 6 minutes; prints SERVING and the address
+mlx-serve/one-shot.sh bench                                # expect about 39 tok/s prose, 58 tok/s code
+```
+
+`mlx-serve/install.sh` checks each Spark (ssh, GB10 and memory, Docker with GPU access, the RoCE devices, disk space),
+applies the two kernel settings a rank needs, pulls the image and checks its digest, downloads the checkpoint
+(277 GB, 91 files) and the 6-bit head to `~/models/GLM-5.3-EXL3-2.75BPW` on each Spark, writes
+`mlx-serve/my-cluster.env` and runs the start check. Run it again to resume a broken download.
+
+| Setting | Meaning |
+|---|---|
+| `MODEL=<directory>` | Where the checkpoint goes, the same path on all four (default `~/models/GLM-5.3-EXL3-2.75BPW`) |
+| `SHARED=1` | `MODEL` is one shared directory all four mount: download once (`SHARED_HOST=<address>` names the machine that can write to it) |
+| `VERIFY=1` | Also check every weight file's sha256 against the repository (about 5 minutes for 277 GB on a Spark's disk) |
+| `SKIP_WEIGHTS=1` | The checkpoint is already at `MODEL` |
+
+**What it needs that it cannot install for you:** four DGX Sparks cabled with RoCE (ConnectX-7, a switch or direct
+cables) and addressed on that fabric, key-based ssh from where you run it, Docker usable by your user with the NVIDIA
+container toolkit, `rdma-core`, about 280 GB of disk for the checkpoint and 25 GB for the image on each Spark (or one
+shared copy of the checkpoint), and passwordless `sudo` for the kernel settings and the page-cache drop while the ranks
+load (without it the installer prints the two commands to run yourself).
+
+### The engine from source (optional)
+
+```bash
+mlx-serve/build-engine.sh                  # every Spark builds the engine: about 4 minutes, 2 GB of disk a Spark
+ENGINE=source mlx-serve/one-shot.sh up     # the same image, with that build mounted over the image's engine
+```
+
+`build-engine.sh` downloads Zig 0.17.0 (checksum pinned) and the source of this image's engine,
+[`drowzeys/TensorFold:glm53-tp4-2026-10-12-r2`](https://github.com/drowzeys/TensorFold/tree/glm53-tp4-2026-10-12-r2)
+at `00c3bb11`, and compiles `libtensorfold_glm53.so`, `tensorfold-native` and the 40 CUDA kernel packs with the image's
+own CUDA 13 compiler. No GPU is needed to build.
+
+**What stays binary in the image, with no source to build here:**
+
+| Part | State |
+|---|---|
+| Rank 0's HTTP server | [mlx-serve](https://github.com/ddalcu/mlx-serve) by David Dalcu plus our bridge to the engine library. The bridge is not published; `/opt/keys-glm53/VERSION` in the image names the commit |
+| The Triton kernel packs and tile tables (`aot*/`, `ref*/`) | Precompiled for the four shapes the presets serve; the scripts that generate them are in the engine branch's `tools/glm53/`, written for our cluster |
+| The DSpark drafter | Weights, from [drowzeys/keys-GLM-5.3-speculator.dspark-ft2](https://huggingface.co/drowzeys/keys-GLM-5.3-speculator.dspark-ft2) |
+
+### What was tested (2026-10-12)
+
+On four DGX Sparks, from a clean copy of this repository and a new checkpoint directory, thinking on (logs in
+`evidence/2026-10-12-oneshot/`):
+
+| Step | Result |
+|---|---|
+| The image pulled by digest with no registry login | pulled |
+| `mlx-serve/install.sh` with `VERIFY=1` | all checks passed; **all 91 weight files match the repository's sha256** (277.0 GB); 369 s |
+| `mlx-serve/one-shot.sh up`, the image's engine | serving after 352 s |
+| `bench`, twice | 39.7 and 39.4 tok/s prose, 58.0 and 57.8 tok/s code |
+| `mlx-serve/checks.py` | passed, no errors; 10 GB left on each node |
+| `mlx-serve/build-engine.sh` on the four Sparks | built in 229 s |
+| `ENGINE=source mlx-serve/one-shot.sh up` | serving after 351 s |
+| `bench` with the source-built engine | 39.6 and 39.2 tok/s prose, 57.5 and 57.7 tok/s code; **both replies identical to the image's engine** |
+| `mlx-serve/checks.py` with the source-built engine | passed, no errors; 10 GB left on each node |
+
+- **What the weight step did here:** the checkpoint directory was filled with hard links of the files our cluster
+  already had, on one shared directory, so the installer kept them and downloaded only the two small files that were
+  missing; the sha256 check is what shows they are the published bytes. A download of all 277 GB through the installer
+  was not run. Its download, resume and checksum paths were run on the small files (a truncated file was continued
+  and verified).
+- **Not tested:** a cluster other than ours (other switch, cabling or addressing), a Spark without passwordless
+  `sudo`, a checkpoint copy on each Spark instead of one shared directory, `ENGINE=source` in the `250k`, `64k` and
+  `1m` presets, and the source-built engine against the as-served scorer.
 
 ## New `2026-10-12-r2-mlx-serve`: two long-context streams (`PRESET=250k`)
 

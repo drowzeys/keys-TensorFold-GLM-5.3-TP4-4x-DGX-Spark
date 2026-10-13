@@ -1,0 +1,4 @@
+prose: 39.6 tok/s (runs 39.6, 39.2; 512 tokens; text 97e9e2bf)
+code: 57.5 tok/s (runs 57.4, 57.5; 512 tokens; text 1ec18b50)
+prose: 39.2 tok/s (runs 39.1, 39.2; 512 tokens; text 97e9e2bf)
+code: 57.7 tok/s (runs 57.6, 57.7; 512 tokens; text 1ec18b50)

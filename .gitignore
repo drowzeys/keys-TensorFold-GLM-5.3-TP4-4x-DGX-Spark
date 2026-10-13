@@ -1,2 +1,6 @@
 __pycache__/
 events.log
+my-cluster.env
+run/
+run-install/
+run-build/

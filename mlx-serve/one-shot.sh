@@ -2,7 +2,7 @@
 # Full GLM-5.3 EXL3 2.75 bpw on four DGX Sparks: mlx-serve on rank 0 with TensorFold 1.0.7's GLM-5.3 CUDA
 # inference engine at tensor parallel 4, ranks 1..3 following. One container a Spark, started over ssh from any machine.
 #   ./one-shot.sh check | up | down | status | bench
-# Settings (environment, or `source cluster.env` first):
+# Settings (environment; mlx-serve/install.sh writes them to mlx-serve/my-cluster.env):
 #   NODES    the four Sparks' fabric addresses, rank 0 first (required)
 #   MODEL    the checkpoint directory, the same path on all four (required)
 #   IMAGE    [ghcr.io/drowzeys/keys-tensorfold-glm53-tp4-dgx-spark:2026-10-12-r2-mlx-serve]
@@ -14,17 +14,24 @@
 #   PORT [18992]  RAILS [2]  MEM [110g]  RDV [29882] (rank rendezvous port)
 #   HEAD_Q   unset: the 6-bit output head when $MODEL/lm_head-6bit/lm_head-6bit.safetensors exists (about 3 % faster
 #            decode, KL +0.0001), else the bf16 head | off: the bf16 head
+#   ENGINE   unset: the image's engine | source: the engine built from its published source by mlx-serve/build-engine.sh
+#            (ENGINE_DIR [~/.local/share/keys-glm53/engine] on every Spark), mounted over the image's
 #   DOCKER_ARGS  extra `docker run` arguments for every rank (e.g. -v a kernel pack for another context)
+# New here? mlx-serve/install.sh <four addresses> checks the Sparks, pulls the image, downloads the weights and writes
+# mlx-serve/my-cluster.env, which this script reads when NODES is not set.
 set -u
+HERE=$(cd "$(dirname "$0")" && pwd)
+[ -n "${NODES:-}" ] || [ ! -f $HERE/my-cluster.env ] || . $HERE/my-cluster.env
 read -r -a NODES <<<"${NODES:-}"
-[ ${#NODES[@]} = 4 ] || { echo "NODES must list four fabric addresses, rank 0 first"; exit 2; }
+[ ${#NODES[@]} = 4 ] || { echo "NODES must list four fabric addresses, rank 0 first (new here? mlx-serve/install.sh <four addresses> sets everything up)"; exit 2; }
 MODEL=${MODEL:-}; DRAFT=${DRAFT:-}; DRAFTER=${DRAFTER:-dspark}
 IMAGE=${IMAGE:-ghcr.io/drowzeys/keys-tensorfold-glm53-tp4-dgx-spark:2026-10-12-r2-mlx-serve}
 PRESET=${PRESET:-}
 case "$PRESET" in "") c=32768 p=4 ;; 64k) c=65536 p=2 ;; 250k) c=250000 p=2 ;; 1m) c=1000000 p=1 ;;
   *) echo "PRESET=$PRESET (64k, 250k or 1m)"; exit 2 ;; esac
 CONTEXT=${CONTEXT:-$c}; PARALLEL=${PARALLEL:-$p}; PORT=${PORT:-18992}; RAILS=${RAILS:-2}; MEM=${MEM:-110g}; RDV=${RDV:-29882}
-HERE=$(cd "$(dirname "$0")" && pwd); RUN=${RUN:-$HERE/run}
+RUN=${RUN:-$HERE/run}; ENGINE=${ENGINE:-}; ENGINE_DIR=${ENGINE_DIR:-.local/share/keys-glm53/engine}
+case "$ENGINE" in ""|image|source) ;; *) echo "ENGINE=$ENGINE (source, or unset for the image's)"; exit 2 ;; esac
 rsh() { ssh -o ConnectTimeout=10 -o BatchMode=yes "$@"; }
 say() { echo "$(date +%H:%M:%S) $*" | tee -a $RUN/events.log; }
 down() { for n in "${NODES[@]}"; do rsh $n 'docker ps -aq --filter label=keys-glm53 | xargs -r docker rm -f' >/dev/null 2>&1 & done; wait; }
@@ -37,6 +44,7 @@ check() {   # read-only; exits 1 if anything blocks a start
       docker image inspect $IMAGE >/dev/null 2>&1 && echo image=ok || echo image=missing
       [ -f '${MODEL:-/nonexistent}/config.json' ] && echo model=ok || echo model=missing
       [ '$DRAFTER' != dflash ] || { [ -f '$DRAFT/config.json' ] && echo draft=ok || echo draft=missing; }
+      [ '$ENGINE' != source ] || { e='$ENGINE_DIR'; case \$e in /*) ;; *) e=\$HOME/\$e ;; esac; [ -x \$e/zig-out/native/bin/tensorfold-native ] && [ -s \$e/zig-out/lib/libtensorfold_glm53.so ] && echo engine=source:\$(cut -c1-8 \$e/commit) || echo engine=missing; }
       echo compaction=\$(cat /proc/sys/vm/compaction_proactiveness) swappiness=\$(cat /proc/sys/vm/swappiness)
       sudo -n true 2>/dev/null && echo sudo=ok || echo sudo=no
       echo swap_used_gb=\$(awk '/SwapTotal/{t=\$2} /SwapFree/{f=\$2} END{print int((t-f)/1048576)}' /proc/meminfo)
@@ -46,6 +54,7 @@ check() {   # read-only; exits 1 if anything blocks a start
     grep -q image=missing <<<"$out" && { echo "  FAIL image not pulled: ssh $n docker pull $IMAGE"; bad=1; }
     grep -q model=missing <<<"$out" && { echo "  FAIL MODEL not found on $n (same path on all four)"; bad=1; }
     grep -q draft=missing <<<"$out" && { echo "  FAIL DRAFT not found on $n"; bad=1; }
+    grep -q engine=missing <<<"$out" && { echo "  FAIL ENGINE=source but no built engine in $ENGINE_DIR on $n: run mlx-serve/build-engine.sh"; bad=1; }
     grep -q "compaction=0" <<<"$out" || echo "  WARN vm.compaction_proactiveness is not 0: run node/gb10-node-settings.sh (decode stalls otherwise)"
     sw=$(grep -o 'swappiness=[0-9]*' <<<"$out" | cut -d= -f2); [ "${sw:-60}" -le 10 ] || { echo "  FAIL vm.swappiness=$sw: run node/gb10-node-settings.sh (the engine gets swapped out while loading)"; bad=1; }
     grep -q "sudo=no" <<<"$out" && echo "  WARN no passwordless sudo on $n: 'up' cannot drop page cache while the ranks load - run 'sudo sysctl vm.drop_caches=1' there during the load"
@@ -61,7 +70,7 @@ case "${1:-}" in
   check) check; exit $? ;;
   bench) exec python3 $HERE/bench.py http://${NODES[0]}:$PORT ;;
   up) ;;
-  *) sed -n 2,14p "$0"; exit 2 ;;
+  *) sed -n 2,20p "$0"; exit 2 ;;
 esac
 [ -n "$MODEL" ] || { echo "MODEL is not set"; exit 2; }
 rm -rf $RUN; mkdir -p $RUN; down
@@ -78,7 +87,7 @@ rail_scan='for d in /sys/class/net/*; do n=${d##*/}; [ -d $d/device/infiniband ]
   [ -n "$g" ] || continue
   o=$(ibv_devices 2>/dev/null | awk "NR>2{print \$1}" | grep -nx "$hca" | cut -d: -f1)
   echo "${net:-?} $hca $g ${o:-0} $n"; done'
-declare -a HCAS RGIDS NGID ZHCAS ZGID IFN; XNIC=0; ref=""
+declare -a HCAS RGIDS NGID ZHCAS ZGID IFN EDIR; XNIC=0; ref=""
 for r in 0 1 2 3; do
   lines=$(rsh "${NODES[$r]}" "$rail_scan" | sort) || { say "ssh to ${NODES[$r]} failed"; exit 1; }
   own=$(awk -v ip="${NODES[$r]}" '{split($1, c, "[./]"); split(ip, d, "."); if (c[1]==d[1] && c[2]==d[2] && c[3]==d[3]) print}' <<<"$lines")
@@ -103,6 +112,11 @@ rank_env() {
   # any TF_GLM53_* you export reaches every rank
   for v in $(compgen -v TF_GLM53_); do e="$e -e $v=${!v}"; done; echo "$e"
 }
+if [ "$ENGINE" = source ]; then   # the engine built by build-engine.sh, in place of the image's
+  for r in 0 1 2 3; do EDIR[$r]=$(rsh ${NODES[$r]} "e='$ENGINE_DIR'; case \$e in /*) ;; *) e=\$HOME/\$e ;; esac; [ -x \$e/zig-out/native/bin/tensorfold-native ] && [ -s \$e/zig-out/lib/libtensorfold_glm53.so ] && echo \$e")
+    [ -n "${EDIR[$r]}" ] || { say "ENGINE=source: no built engine in $ENGINE_DIR on ${NODES[$r]} (run mlx-serve/build-engine.sh)"; exit 1; }; done
+  say "engine: built from source ($(rsh ${NODES[0]} "cut -c1-8 ${EDIR[0]}/commit")), mounted over the image's"
+fi
 flags="--label keys-glm53=1 --user \$(id -u):\$(id -g) -e HOME=/tmp --gpus all --network host --ipc host --device /dev/infiniband --ulimit memlock=-1 --cap-add IPC_LOCK --memory $MEM --memory-swap $MEM ${DOCKER_ARGS:-}"
 for r in 0 1 2 3; do a=$(avail ${NODES[$r]}); [ "${a:-0}" -ge 100 ] || { say "${NODES[$r]} has ${a} GB available (< 100): stop other jobs, drop page cache"; exit 1; }; done
 # GB10's GPU allocations can only use free memory: drop clean page cache on the nodes while the ranks load
@@ -115,7 +129,7 @@ for r in 0 1 2 3; do a=$(avail ${NODES[$r]}); [ "${a:-0}" -ge 100 ] || { say "${
       r=0; for x in "${NODES[@]}"; do rsh $x "docker logs keys-glm53-r$r" > $RUN/abort-r$r.log 2>&1; r=$((r+1)); done; down; fi
   done; sleep 10; done ) &
 for r in 1 2 3 0; do
-  rsh ${NODES[$r]} "docker run -d --name keys-glm53-r$r $flags $(rank_env $r) $IMAGE" >> $RUN/start.log 2>&1 || { say "rank $r did not start (run/start.log)"; touch $RUN/STOP; down; exit 1; }
+  rsh ${NODES[$r]} "docker run -d --name keys-glm53-r$r $flags ${EDIR[$r]:+-v ${EDIR[$r]}/zig-out:/opt/keys-glm53/zig-out:ro} $(rank_env $r) $IMAGE" >> $RUN/start.log 2>&1 || { say "rank $r did not start (run/start.log)"; touch $RUN/STOP; down; exit 1; }
 done
 say "started: rank 0 on ${NODES[0]}:$PORT, ranks 1..3 following; model $MODEL, drafter $DRAFTER $DRAFT, context $CONTEXT, parallel $PARALLEL"
 t0=$(date +%s)
